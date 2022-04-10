@@ -7,5 +7,13 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 add_compile_options(-Wall -O2 -g -Wno-sign-compare -Wno-class-memaccess -Wno-strict-aliasing)
 
+include_directories(src)
+
 add_subdirectory(src)
 add_subdirectory(test)
+
+link_directories(third_party)
+include_directories(include/base)
+
+
+
