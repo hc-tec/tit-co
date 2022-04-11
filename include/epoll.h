@@ -5,15 +5,21 @@
 #ifndef TIT_COROUTINE_EPOLL_H
 #define TIT_COROUTINE_EPOLL_H
 
+
 #include <sys/epoll.h>
+#include <sys/eventfd.h>
+
+
 
 namespace tit {
 
 namespace co {
 
+int createEventfd();
+
 class Epoll {
  public:
-  Epoll(int sched_id);
+  explicit Epoll(int sched_id);
   ~Epoll();
 
   bool add_ev_read(int fd, int32_t co_id);
