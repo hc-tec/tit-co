@@ -8,10 +8,12 @@
 #include <cstring>
 
 #include <functional>
+#include <utility>
 #include <vector>
 
 #include "base/mutex.h"
 #include "base/thread.h"
+
 
 //#include "epoll.h"
 #include "table.h"
@@ -43,7 +45,7 @@ class TaskManager {
   TaskManager() = default;
   ~TaskManager() = default;
 
-  void add_new_task(Scheduler::Func* cb) {
+  void add_new_task(Scheduler::Func cb) {
     MutexGuard guard(mutex_);
     new_tasks_.push_back(cb);
   }
@@ -54,7 +56,7 @@ class TaskManager {
   }
 
   void get_all_tasks(
-      std::vector<Scheduler::Func*>& new_tasks,
+      std::vector<Scheduler::Func>& new_tasks,
       std::vector<Coroutine*>& ready_tasks
   ) {
     MutexGuard guard(mutex_);
@@ -64,7 +66,7 @@ class TaskManager {
 
  private:
     Mutex mutex_;
-    std::vector<Scheduler::Func*> new_tasks_;
+    std::vector<Scheduler::Func> new_tasks_;
     std::vector<Coroutine*> ready_tasks_;
 };
 
@@ -97,7 +99,7 @@ struct Coroutine {
   // Once the coroutine starts, we no longer need the cb, and it can
   // be used to store the Scheduler pointer.
   union {
-    Scheduler::Func* cb;   // coroutine function
+    Scheduler::Func cb;   // coroutine function
     Scheduler* s;  // scheduler this coroutine runs in
   };
 
@@ -161,8 +163,8 @@ class SchedulerImpl : public Scheduler {
   void yield();
 
   // add a new task will run in a coroutine later (thread-safe)
-  void add_new_task(Scheduler::Func* cb) {
-    task_mgr_.add_new_task(cb);
+  void add_new_task(Scheduler::Func cb) {
+    task_mgr_.add_new_task(std::move(cb));
 //    _epoll->signal();
   }
 
@@ -192,7 +194,7 @@ class SchedulerImpl : public Scheduler {
   }
 
   // pop a Coroutine from the pool
-  Coroutine* new_coroutine(Scheduler::Func* cb) {
+  Coroutine* new_coroutine(Scheduler::Func cb) {
     Coroutine* co = co_pool_.pop();
     co->cb = cb;
     return co;

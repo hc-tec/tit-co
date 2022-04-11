@@ -15,7 +15,7 @@ static co::SchedulerManager schedulerManager(1, 1024*1024);
 
 void f () {
   LOG(INFO) << "f() begin";
-  for (int i = 0; i < 100; ++i) {
+  for (int i = 0; i < 3; ++i) {
     LOG(INFO) <<  i << " ";
   }
   LOG(INFO) << "f() end";
@@ -28,14 +28,18 @@ void g (int a) {
 
   auto* scheduler =
       static_cast<co::SchedulerImpl*>(schedulerManager.next_scheduler());
-  std::function<void()> f_ = std::bind(&f);
-  scheduler->add_new_task(&f_);
 
-  scheduler->add_new_task(&f_);
+  scheduler->add_new_task([](){
+    f();
+  });
 
-  scheduler->add_new_task(&f_);
+  scheduler->add_new_task([](){
+    f();
+  });
 
-  scheduler->add_new_task(&f_);
+  scheduler->add_new_task([](){
+    f();
+  });
 }
 
 
@@ -45,8 +49,8 @@ int main () {
       static_cast<co::SchedulerImpl*>(schedulerManager.next_scheduler());
   std::function<void()> f_ = std::bind(&f);
   std::function<void()> g_ = std::bind(&g, 1);
-  scheduler->add_new_task(&f_);
-  scheduler->add_new_task(&g_);
+  scheduler->add_new_task(f_);
+  scheduler->add_new_task(g_);
 
   char ch;
   std::cin >> ch;

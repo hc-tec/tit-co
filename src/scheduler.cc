@@ -11,6 +11,7 @@
 
 #include "base/simple_thread.h"
 #include "base/platform_thread.h"
+#include "log/logging.h"
 
 #include "context/context.h"
 
@@ -39,7 +40,10 @@ SchedulerImpl::SchedulerImpl(int id, int sched_num, int stack_size)
 
 void SchedulerImpl::main_func(tb_context_from_t from) {
   ((Coroutine*)from.priv)->ctx = from.ctx;
-  (*gSched->running()->cb)(); // run the coroutine function
+  LOG(TRACE) << "coroutine func execute begin";
+  LOG(TRACE) << &gSched->running()->cb;
+  gSched->running()->cb(); // run the coroutine function
+  LOG(TRACE) << "coroutine func execute end";
   tb_context_jump(from.ctx, 0); // jump back to the from context
 }
 
@@ -57,13 +61,13 @@ void SchedulerImpl::resume(Coroutine* co) {
     // resume new coroutine
     if (s->co != co) { this->save_stack(s->co); s->co = co; }
     co->ctx = tb_context_make(s->p, stack_size_, main_func);
-    std::cout << "resume new co: " << co << " id: " << co->id << std::endl;
+    LOG(INFO) << "resume new co: " << co << " id: " << co->id;
     from = tb_context_jump(co->ctx, main_co_); // jump to main_func(from):  from.priv == _main_co
 
   } else {
 
     // resume suspended coroutine
-    std::cout << "resume co: " << co << ", id: " <<  co->id << ", stack: " << co->stack.size() << std::endl;
+    LOG(INFO) << "resume co: " << co << ", id: " <<  co->id << ", stack: " << co->stack.size();
     if (s->co != co) {
       this->save_stack(s->co);
 //      CHECK(s->top == (char*)co->ctx + co->stack.size());
@@ -77,7 +81,7 @@ void SchedulerImpl::resume(Coroutine* co) {
     // yield() was called in the coroutine, update context for it
     assert(running_co_ == from.priv);
     running_co_->ctx = from.ctx;
-    std::cout << "yield co: " << running_co_ << " id: " << running_co_->id << std::endl;
+    LOG(INFO) << "yield co: " << running_co_ << " id: " << running_co_->id;
   } else {
     // the coroutine has terminated, recycle it
     this->recycle();
@@ -86,7 +90,7 @@ void SchedulerImpl::resume(Coroutine* co) {
 
 void SchedulerImpl::loop() {
   gSched = this;
-  std::vector<Scheduler::Func *> new_tasks;
+  std::vector<Scheduler::Func> new_tasks;
   std::vector<Coroutine*> ready_tasks;
 
   while (!stop_) {
@@ -97,7 +101,7 @@ void SchedulerImpl::loop() {
       task_mgr_.get_all_tasks(new_tasks, ready_tasks);
 
       if (!new_tasks.empty()) {
-        std::cout << ">> resume new tasks, num: " << new_tasks.size() << std::endl;
+        LOG(INFO) << ">> resume new tasks, num: " << new_tasks.size();
         for (size_t i = 0; i < new_tasks.size(); ++i) {
           this->resume(this->new_coroutine(new_tasks[i]));
         }
@@ -105,7 +109,7 @@ void SchedulerImpl::loop() {
       }
 
       if (!ready_tasks.empty()) {
-        std::cout << ">> resume ready tasks, num: " << ready_tasks.size() << std::endl;
+        LOG(INFO) << ">> resume ready tasks, num: " << ready_tasks.size();
         for (size_t i = 0; i < ready_tasks.size(); ++i) {
           this->resume(ready_tasks[i]);
         }
@@ -141,7 +145,7 @@ SchedulerManager::SchedulerManager(int sched_num, int stack_size)
 
 Scheduler* SchedulerManager::next_scheduler() {
   index_ = index_ % sched_num_;
-  std::cout << "scheduler: " << index_ << std::endl;
+  LOG(INFO) << "scheduler: " << index_;
   return scheds_[index_++];
 }
 
