@@ -141,6 +141,7 @@ SchedulerManager::SchedulerManager(int sched_num, int stack_size)
 
 Scheduler* SchedulerManager::next_scheduler() {
   index_ = index_ % sched_num_;
+  std::cout << "scheduler: " << index_ << std::endl;
   return scheds_[index_++];
 }
 

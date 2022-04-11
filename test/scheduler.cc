@@ -2,27 +2,53 @@
 // Created by titto on 2022/4/10.
 //
 
-#include "scheduler.h"
-
 #include <iostream>
+
+
+#include "log/logging.h"
+
+#include "scheduler.h"
 
 using namespace tit;
 
+static co::SchedulerManager schedulerManager(1, 1024*1024);
 
 void f () {
+  LOG(INFO) << "f() begin";
   for (int i = 0; i < 100; ++i) {
-    std::cout <<  i << " " << std::endl;
+    LOG(INFO) <<  i << " ";
   }
+  LOG(INFO) << "f() end";
+}
+
+void g (int a) {
+  LOG(INFO) << "g() begin";
+  LOG(INFO) << a;
+  LOG(INFO) << "g() end";
+
+  auto* scheduler =
+      static_cast<co::SchedulerImpl*>(schedulerManager.next_scheduler());
+  std::function<void()> f_ = std::bind(&f);
+  scheduler->add_new_task(&f_);
+
+  scheduler->add_new_task(&f_);
+
+  scheduler->add_new_task(&f_);
+
+  scheduler->add_new_task(&f_);
 }
 
 
 int main () {
-  co::SchedulerManager schedulerManager(1, 1024*1024);
+
   auto* scheduler =
       static_cast<co::SchedulerImpl*>(schedulerManager.next_scheduler());
-  std::function<void()> func = std::bind(&f);
-  scheduler->add_new_task(&func);
+  std::function<void()> f_ = std::bind(&f);
+  std::function<void()> g_ = std::bind(&g, 1);
+  scheduler->add_new_task(&f_);
+  scheduler->add_new_task(&g_);
 
-  base::PlatformThread::Sleep(2000);
+  char ch;
+  std::cin >> ch;
 }
 

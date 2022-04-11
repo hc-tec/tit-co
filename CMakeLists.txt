@@ -20,6 +20,7 @@ add_subdirectory(test)
 
 link_directories(third_party)
 include_directories(include/base)
+include_directories(include/log)
 
 
 
