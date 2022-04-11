@@ -65,7 +65,7 @@ class PlatformThread {
 
   static int Join(pthread_t pthread);
 
-  static int Destroy(pthread_t pthread);
+  static int Detach(pthread_t pthread);
 
 };
 

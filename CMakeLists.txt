@@ -5,6 +5,12 @@ project(tit-coroutine)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
+if(MSVC)
+    enable_language(C CXX ASM_MASM)
+else()
+    enable_language(C CXX ASM)
+endif()
+
 add_compile_options(-Wall -O2 -g -Wno-sign-compare -Wno-class-memaccess -Wno-strict-aliasing)
 
 include_directories(src)

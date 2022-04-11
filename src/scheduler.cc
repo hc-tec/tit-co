@@ -7,6 +7,12 @@
 #include <cstdlib>
 
 #include <iostream>
+#include <functional>
+
+#include "base/simple_thread.h"
+#include "base/platform_thread.h"
+
+#include "context/context.h"
 
 namespace tit {
 
@@ -60,7 +66,7 @@ void SchedulerImpl::resume(Coroutine* co) {
     std::cout << "resume co: " << co << ", id: " <<  co->id << ", stack: " << co->stack.size() << std::endl;
     if (s->co != co) {
       this->save_stack(s->co);
-      CHECK(s->top == (char*)co->ctx + co->stack.size());
+//      CHECK(s->top == (char*)co->ctx + co->stack.size());
       memcpy(co->ctx, co->stack.data(), co->stack.size()); // restore stack data
       s->co = co;
     }
@@ -78,6 +84,71 @@ void SchedulerImpl::resume(Coroutine* co) {
   }
 }
 
+void SchedulerImpl::loop() {
+  gSched = this;
+  std::vector<Scheduler::Func *> new_tasks;
+  std::vector<Coroutine*> ready_tasks;
+
+  while (!stop_) {
+    base::PlatformThread::Sleep(1000);
+
+
+    do {
+      task_mgr_.get_all_tasks(new_tasks, ready_tasks);
+
+      if (!new_tasks.empty()) {
+        std::cout << ">> resume new tasks, num: " << new_tasks.size() << std::endl;
+        for (size_t i = 0; i < new_tasks.size(); ++i) {
+          this->resume(this->new_coroutine(new_tasks[i]));
+        }
+        new_tasks.clear();
+      }
+
+      if (!ready_tasks.empty()) {
+        std::cout << ">> resume ready tasks, num: " << ready_tasks.size() << std::endl;
+        for (size_t i = 0; i < ready_tasks.size(); ++i) {
+          this->resume(ready_tasks[i]);
+        }
+        ready_tasks.clear();
+      }
+
+    } while (0);
+
+    if (running_co_) running_co_ = 0;
+
+  }
+
+}
+
+void SchedulerImpl::start() {
+  std::function<void()> func = [&]{
+    this->loop();
+  };
+  thread_ = new SimpleThread(func, "");
+  thread_->Start();
+  thread_->Detach();
+}
+
+SchedulerManager::SchedulerManager(int sched_num, int stack_size)
+    : sched_num_(sched_num),
+      index_(0) {
+  for (int i = 0; i < sched_num; ++i) {
+    SchedulerImpl* s = new SchedulerImpl(i, sched_num, stack_size);
+    s->start();
+    scheds_.push_back(s);
+  }
+}
+
+Scheduler* SchedulerManager::next_scheduler() {
+  index_ = index_ % sched_num_;
+  return scheds_[index_++];
+}
+
+SchedulerManager::~SchedulerManager() {
+  for (int i = 0; i < sched_num_; ++i) {
+    delete (SchedulerImpl*) scheds_[i];
+  }
+}
 
 }  // namespace co
 

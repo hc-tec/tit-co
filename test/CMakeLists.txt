@@ -11,7 +11,9 @@ foreach(TEST_FILE ${ALL_TEST_FILES})
             PROPERTIES OUTPUT_NAME ${TEST_TARGET}
             )
 
-    target_link_libraries(${TEST_TARGET}_test PRIVATE co)
+    link_directories(third_party)
+
+    target_link_libraries(${TEST_TARGET}_test PRIVATE co tit_base)
 
     add_test(NAME ${TEST_TARGET}_test COMMAND ${TEST_TARGET}_test)
 endforeach(TEST_FILE ${ALL_TEST_FILES})

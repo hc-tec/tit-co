@@ -11,8 +11,11 @@
 #include <vector>
 
 #include "base/mutex.h"
+#include "base/thread.h"
 
+//#include "epoll.h"
 #include "table.h"
+#include "stream.h"
 #include "context/context.h"
 
 namespace tit {
@@ -71,10 +74,6 @@ struct Stack {
   Coroutine* co; // coroutine owns this stack
 };
 
-
-
-
-
 enum co_state_t : uint8_t {
   st_init = 0,     // initial state
   st_wait = 1,     // wait for an event
@@ -83,8 +82,8 @@ enum co_state_t : uint8_t {
 };
 
 struct Coroutine {
-  Coroutine();
-  ~Coroutine();
+  Coroutine() = default;
+  ~Coroutine() {};
 
   uint32_t id;
   uint8_t state;
@@ -93,7 +92,7 @@ struct Coroutine {
   tb_context_t ctx;
 
   // for saving stack data of this coroutine
-  union { char stack[1024*1024]; char _dummy1[sizeof(stack)]; };
+  union { Stream stack; char _dummy1[sizeof(Stream)]; };
 
   // Once the coroutine starts, we no longer need the cb, and it can
   // be used to store the Scheduler pointer.
@@ -122,7 +121,7 @@ class Copool {
       auto& co = table_[last];
       co.state = st_init;
       co.ctx = 0;
-      memset(co.stack, 0, 1024 * 1024);
+      co.stack.bzero();
       return &co;
     } else {
       auto& co = table_[id_];
@@ -134,7 +133,7 @@ class Copool {
 
   void push(Coroutine* co) {
     ids_.push_back(co->id);
-    if (ids_.size() >= 1024) memset(co->stack, 0, 1024 * 1024);
+    if (ids_.size() >= 1024) co->stack.bzero();
   }
 
   Coroutine* operator[](size_t i) {
@@ -151,7 +150,9 @@ class Copool {
 class SchedulerImpl : public Scheduler {
  public:
   SchedulerImpl(int id, int sched_num, int stack_size);
-  ~SchedulerImpl();
+  ~SchedulerImpl() {
+      delete thread_;
+  };
 
   Coroutine* running() { return running_co_; }
 
@@ -171,6 +172,8 @@ class SchedulerImpl : public Scheduler {
 //    _epoll->signal();
   }
 
+  void start();
+
  private:
 
   static void main_func(tb_context_from_t from);
@@ -183,7 +186,7 @@ class SchedulerImpl : public Scheduler {
   // save stack for the coroutine
   void save_stack(Coroutine* co) {
     if (co) {
-      co->stack.clear();
+      co->stack.reset();
       co->stack.append(co->ctx, stack_[co->sid].top - (char*)co->ctx);
     }
   }
@@ -195,11 +198,15 @@ class SchedulerImpl : public Scheduler {
     return co;
   }
 
+  void loop();
+
   int wait_ms_;
   int id_;
   int sched_num_;
   int stack_size_;
   Stack* stack_;
+
+  base::Thread* thread_;
 
   Coroutine* running_co_;
   Coroutine* main_co_;
@@ -208,7 +215,19 @@ class SchedulerImpl : public Scheduler {
   TaskManager task_mgr_;
 
   bool stop_;
+};
 
+class SchedulerManager  {
+ public:
+  SchedulerManager(int sched_num, int stack_size);
+  ~SchedulerManager();
+
+  Scheduler* next_scheduler();
+
+ private:
+  int sched_num_;
+  std::vector<Scheduler*> scheds_;
+  int index_;
 };
 
 

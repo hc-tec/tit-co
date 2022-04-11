@@ -61,6 +61,8 @@ class Thread : public PlatformThread::Delegate {
 
   int Join();
 
+  int Detach();
+
  private:
 
   void SetDefaultName();
