@@ -10,7 +10,7 @@ namespace tit {
 
 namespace co {
 
-void TaskManager::AddNewTasks(Closure* func) {
+void TaskManager::AddNewTasks(Closure func) {
   ThreadMutexGuard guard(mutex_);
   new_tasks_.push_back(func);
 }

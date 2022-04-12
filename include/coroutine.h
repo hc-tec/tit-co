@@ -47,7 +47,7 @@ struct Coroutine {
   // just let scheduler resume the coroutine to last position the function runs
   // so we use union to save
   union {
-    Closure* func_;       // function the coroutine holding
+    Closure func_;       // function the coroutine holding
     Scheduler* scheduler_;  // scheduler belong to
   };
 

@@ -22,11 +22,11 @@ typedef base::MutexLockGuard ThreadMutexGuard;
 class TaskManager {
  public:
 
-  typedef std::vector<Closure*> NewTaskList;
+  typedef std::vector<Closure> NewTaskList;
   typedef std::vector<Coroutine*> ReadyTaskList;
 
   // when task isn't yield, it's a new task
-  void AddNewTasks(Closure* func);
+  void AddNewTasks(Closure func);
 
   // when task is yield, and ready to resume, it's a ready task
   void AddReadyTasks(Coroutine* co);

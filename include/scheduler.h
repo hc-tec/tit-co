@@ -28,7 +28,8 @@ struct Stack;
 class Scheduler {
  public:
   // smart pointer of Scheduler
-  typedef std::shared_ptr<Scheduler> Ptr;
+//  typedef std::shared_ptr<Scheduler> Ptr;
+  typedef Scheduler* Ptr;
 
 };
 
@@ -51,7 +52,8 @@ class SchedulerImpl : public Scheduler {
  public:
   // smart pointer of SchedulerImpl
   // if Ptr is changed, the factory method [Create] need to be adjust also.
-  typedef std::shared_ptr<SchedulerImpl> Ptr;
+//  typedef std::shared_ptr<SchedulerImpl> Ptr;
+  typedef SchedulerImpl* Ptr;
 
   SchedulerImpl(uint sched_id, uint sched_num, uint stack_size);
   ~SchedulerImpl();
@@ -59,8 +61,9 @@ class SchedulerImpl : public Scheduler {
   // factory method
   // return smart pointer of Scheduler
   static Ptr Create(uint sched_id, uint sched_num, uint stack_size) {
-    return std::make_shared<SchedulerImpl>(
-        sched_id, sched_num, stack_size);
+//    return std::make_shared<SchedulerImpl>(
+//        sched_id, sched_num, stack_size);
+      return new SchedulerImpl(sched_id, sched_num, stack_size);
   }
 
   uint id() const { return id_; }
@@ -83,7 +86,7 @@ class SchedulerImpl : public Scheduler {
 
   // when task isn't yield, it's a new task
   void AddNewTask(Closure func) {
-    task_mgr_.AddNewTasks(&func);
+    task_mgr_.AddNewTasks(func);
   }
 
   // when task is yield, and ready to resume, it's a ready task
@@ -108,7 +111,7 @@ class SchedulerImpl : public Scheduler {
 
   /* Copool Begin */
 
-  Coroutine* NewCoroutine(Closure* func);
+  Coroutine* NewCoroutine(Closure func);
 
   /* Copool End */
 

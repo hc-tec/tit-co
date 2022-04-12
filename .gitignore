@@ -3,3 +3,4 @@ build
 lib
 config.h
 cmake-build-debug
+namespace

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "def.h"
+#include "cerrno"
 
 namespace tit {
 

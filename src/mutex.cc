@@ -38,7 +38,7 @@ inline bool MutexImpl::TryLock() {
 }
 
 inline void MutexImpl::Lock() {
-  auto s = gSched;
+  auto s = ThreadLocalSingleton<SchedulerImpl*>::instance();
   _mtx.Lock();
   if (!_lock) {
     _lock = true;
@@ -48,7 +48,7 @@ inline void MutexImpl::Lock() {
     if (co->scheduler_ != s) co->scheduler_ = s;
     _co_wait.push_back(co);
     _mtx.Unlock();
-    s->yield();
+    s->Yield();
   }
 }
 
@@ -61,7 +61,7 @@ inline void MutexImpl::Unlock() {
     Coroutine* co = _co_wait.front();
     _co_wait.pop_front();
     _mtx.Unlock();
-    (co->scheduler_.lock())->add_ready_task(co);
+    ((SchedulerImpl*)co->scheduler_)->AddReadyTask(co);
   }
 }
 

@@ -6,6 +6,7 @@
 
 #include "atomic.h"
 #include "coroutine.h"
+#include "base/platform_thread.h"
 
 
 namespace tit {
@@ -26,6 +27,7 @@ SchedulerManager::SchedulerManager(uint sched_num,
     SchedulerImpl::Ptr scheduler = SchedulerImpl::Create(
         i, sched_num, stack_size);
     scheduler->Start();
+    LOG(INFO) << "scheduler: " << i << " init";
     scheds_.push_back(std::move(scheduler));
   }
 }
@@ -41,6 +43,7 @@ SchedulerImpl::SchedulerImpl(uint sched_id,
     : id_(sched_id),
       sched_num_(sched_num),
       stack_size_(stack_size),
+      running_co_(nullptr),
       stop_(false) {
 
   stacks_ = static_cast<Stack*>(calloc(kShareStackSize, stack_size));
@@ -55,8 +58,9 @@ void SchedulerImpl::Start() {
   assert(!stop_);
   std::string name(&"Scheduler-" [id_]);
   thread_ = new SimpleThread([&]() {
-    Loop();
-  }, name);
+    this->Loop();
+  });
+  thread_->Start();
   thread_->Detach();
 }
 
@@ -66,7 +70,7 @@ void SchedulerImpl::Stop() {
   stop_ = true;
 }
 
-Coroutine* SchedulerImpl::NewCoroutine(Closure* func) {
+Coroutine* SchedulerImpl::NewCoroutine(Closure func) {
   Coroutine* co = co_pool_.Pop();
   co->func_ = func;
   return co;
@@ -75,6 +79,7 @@ Coroutine* SchedulerImpl::NewCoroutine(Closure* func) {
 void SchedulerImpl::Resume(Coroutine* co) {
   tb_context_from_t from;
   Stack* stack = &stacks_[co->stack_id_];
+  running_co_ = co;
   if (stack->p == 0) {
     stack->p = static_cast<char*>(malloc(stack_size_));
     stack->top = stack->p + stack_size_;
@@ -138,11 +143,14 @@ void SchedulerImpl::Recycle() {
 void SchedulerImpl::MainFunc(tb_context_from_t from) {
   ((Coroutine*)from.priv)->ctx_ = from.ctx;
   auto scheduler = ThreadLocalSingleton<SchedulerImpl*>::instance();
-  scheduler->running()->func_->operator()(); // run the coroutine function
+  LOG(TRACE) << "func execute in scheduler" << scheduler;
+  (scheduler->running()->func_)(); // run the coroutine function
   tb_context_jump(from.ctx, 0); // jump back to the from context
 }
 
 void SchedulerImpl::Loop() {
+  LOG(INFO) << "Scheduler: " << id_ << " Enter Loop";
+
   ThreadLocalSingleton<SchedulerImpl*>::instance() = this;
 
   TaskManager::NewTaskList newTaskList;
@@ -150,12 +158,12 @@ void SchedulerImpl::Loop() {
 
   while (!stop_) {
     if (stop_) break;
-
+    base::PlatformThread::Sleep(1000);
     do {
       task_mgr_.GetAllTasks(newTaskList, readyTaskList);
       if (!newTaskList.empty()) {
         LOG(TRACE) << ">> resume new tasks, num: " << newTaskList.size();
-        for (Closure* func : newTaskList) {
+        for (Closure func : newTaskList) {
           Resume(NewCoroutine(func));
         }
         newTaskList.clear();
