@@ -14,28 +14,28 @@ Copoll::Copoll()
       idle_co_ids_(kPoolSize),
       pool_(kPoolSize) {}
 
-Coroutine& Copoll::Pop() {
+Coroutine* Copoll::Pop() {
   // if there is no more coroutine
   // it's time to consider capacity expansion
   if (idle_co_ids_.empty()) {
     pool_.resize(pool_.size() * 1.5);
-    Coroutine& co = pool_[id_];
-    co.id_ = id_;
+    Coroutine* co = &pool_[id_];
+    co->id_ = id_;
     ++id_;
-    co.stack_id_ = static_cast<uint8>(co.id_ & 7);
+    co->stack_id_ = static_cast<uint8>(co->id_ & 7);
     return co;
   } else {
     uint32 last = idle_co_ids_.back();
     idle_co_ids_.pop_back();
-    Coroutine& co = pool_[last];
-    co.Init();
+    Coroutine* co = &pool_[last];
+    co->Init();
     return co;
   }
 
 }
 
-void Copoll::Push(Coroutine& co) {
-  idle_co_ids_.push_back(co.id_);
+void Copoll::Push(Coroutine* co) {
+  idle_co_ids_.push_back(co->id_);
 }
 
 }  // namespace co

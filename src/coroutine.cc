@@ -17,11 +17,16 @@ Coroutine::Coroutine()
       state_(co_state::kInit),
       stack_(),
       ctx_(nullptr),
-      cb_(nullptr),
-      scheduler_() {}
+      func_(nullptr) {}
 
 Coroutine::~Coroutine() {
   stack_.~Stream();
+}
+
+void Coroutine::Init() {
+  state_ = co_state::kInit;
+  ctx_ = nullptr;
+  stack_.reset();
 }
 
 }  // namespace co

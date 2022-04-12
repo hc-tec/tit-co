@@ -21,10 +21,10 @@ class Copoll {
   ~Copoll() = default;
 
   // get idle coroutine from pool
-  Coroutine& Pop();
+  Coroutine* Pop();
 
   // push coroutine to idle list
-  void Push(Coroutine& co);
+  void Push(Coroutine* co);
 
  private:
   // default coroutine num

@@ -29,6 +29,9 @@ struct Coroutine {
   Coroutine();
   ~Coroutine();
 
+  // init state, ctx, stack
+  void Init();
+
   uint32 id_;  // coroutine id
   uint32 sched_id_;  // scheduler id
   uint8 stack_id_;  // stack index in scheduler share stack
@@ -44,8 +47,8 @@ struct Coroutine {
   // just let scheduler resume the coroutine to last position the function runs
   // so we use union to save
   union {
-    std::unique_ptr<Closure> func_;       // function the coroutine holding
-    std::weak_ptr<Scheduler> scheduler_;  // scheduler belong to
+    Closure* func_;       // function the coroutine holding
+    Scheduler* scheduler_;  // scheduler belong to
   };
 
 };
