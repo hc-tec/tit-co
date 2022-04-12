@@ -1,7 +1,7 @@
 #pragma once
 
 #include "base/noncopyable.h"
-
+#include "def.h"
 #include "atomic.h"
 
 namespace tit {
@@ -29,13 +29,13 @@ class Mutex {
      *   - It MUST be called in a coroutine.
      *   - It will block until the lock was acquired by the calling coroutine.
    */
-  void lock() const;
+  void Lock() const;
 
   /**
      * release the lock
      *   - It SHOULD be called in the coroutine that holds the lock.
    */
-  void unlock() const;
+  void Unlock() const;
 
   /**
      * try to acquire the lock
@@ -44,7 +44,7 @@ class Mutex {
      *
      * @return  true if the lock was acquired by the calling coroutine, otherwise false
    */
-  bool try_lock() const;
+  bool TryLock() const;
 
  private:
   uint32_t* _p;
@@ -57,11 +57,11 @@ class Mutex {
  */
 class MutexGuard {
  public:
-  explicit MutexGuard(const co::Mutex& lock) : _lock(lock) { _lock.lock(); }
+  explicit MutexGuard(const co::Mutex& lock) : _lock(lock) { _lock.Lock(); }
 
-  explicit MutexGuard(const co::Mutex* lock) : _lock(*lock) { _lock.lock(); }
+  explicit MutexGuard(const co::Mutex* lock) : _lock(*lock) { _lock.Lock(); }
 
-  ~MutexGuard() { _lock.unlock(); }
+  ~MutexGuard() { _lock.Unlock(); }
 
  private:
   const co::Mutex& _lock;

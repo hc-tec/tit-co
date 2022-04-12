@@ -6,22 +6,25 @@
 
 #include "mutex.h"
 
+#include "scheduler.h"
+#include "coroutine.h"
+
 namespace tit {
 
 namespace co {
 
-extern __thread SchedulerImpl* gSched;
+//extern __thread SchedulerImpl* gSched;
 
 class MutexImpl {
  public:
   MutexImpl() : _lock(false) {}
   ~MutexImpl() = default;
 
-  void lock();
+  void Lock();
 
-  void unlock();
+  void Unlock();
 
-  bool try_lock();
+  bool TryLock();
 
  private:
   Mutex _mtx;
@@ -29,36 +32,36 @@ class MutexImpl {
   bool _lock;
 };
 
-inline bool MutexImpl::try_lock() {
+inline bool MutexImpl::TryLock() {
   MutexGuard g(_mtx);
   return _lock ? false : (_lock = true);
 }
 
-inline void MutexImpl::lock() {
+inline void MutexImpl::Lock() {
   auto s = gSched;
-  _mtx.lock();
+  _mtx.Lock();
   if (!_lock) {
     _lock = true;
-    _mtx.unlock();
+    _mtx.Unlock();
   } else {
     Coroutine* co = s->running();
-    if (co->s != s) co->s = s;
+    if (co->scheduler_ != s) co->scheduler_ = s;
     _co_wait.push_back(co);
-    _mtx.unlock();
+    _mtx.Unlock();
     s->yield();
   }
 }
 
-inline void MutexImpl::unlock() {
-  _mtx.lock();
+inline void MutexImpl::Unlock() {
+  _mtx.Lock();
   if (_co_wait.empty()) {
     _lock = false;
-    _mtx.unlock();
+    _mtx.Unlock();
   } else {
     Coroutine* co = _co_wait.front();
     _co_wait.pop_front();
-    _mtx.unlock();
-    ((SchedulerImpl*)co->s)->add_ready_task(co);
+    _mtx.Unlock();
+    (co->scheduler_.lock())->add_ready_task(co);
   }
 }
 
@@ -76,16 +79,16 @@ Mutex::~Mutex() {
   }
 }
 
-void Mutex::lock() const {
-  ((MutexImpl*)(_p + 2))->lock();
+void Mutex::Lock() const {
+  ((MutexImpl*)(_p + 2))->Lock();
 }
 
-void Mutex::unlock() const {
-  ((MutexImpl*)(_p + 2))->unlock();
+void Mutex::Unlock() const {
+  ((MutexImpl*)(_p + 2))->Unlock();
 }
 
-bool Mutex::try_lock() const {
-  return ((MutexImpl*)(_p + 2))->try_lock();
+bool Mutex::TryLock() const {
+  return ((MutexImpl*)(_p + 2))->TryLock();
 }
 
 

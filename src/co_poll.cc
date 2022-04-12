@@ -3,6 +3,7 @@
 //
 
 #include "co_poll.h"
+#include "coroutine.h"
 
 namespace tit {
 
@@ -13,7 +14,7 @@ Copoll::Copoll()
       idle_co_ids_(kPoolSize),
       pool_(kPoolSize) {}
 
-Coroutine& Copoll::pop() {
+Coroutine& Copoll::Pop() {
   // if there is no more coroutine
   // it's time to consider capacity expansion
   if (idle_co_ids_.empty()) {
@@ -24,16 +25,16 @@ Coroutine& Copoll::pop() {
     co.stack_id_ = static_cast<uint8>(co.id_ & 7);
     return co;
   } else {
-    uint last = idle_co_ids_.back();
+    uint32 last = idle_co_ids_.back();
     idle_co_ids_.pop_back();
     Coroutine& co = pool_[last];
-    co.init();
+    co.Init();
     return co;
   }
 
 }
 
-void Copoll::push(Coroutine& co) {
+void Copoll::Push(Coroutine& co) {
   idle_co_ids_.push_back(co.id_);
 }
 
