@@ -39,6 +39,8 @@ void Copoll::Push(Coroutine* co) {
   idle_co_ids_.push_back(co->id_);
 }
 
+Coroutine* Copoll::operator[](int i) { return &pool_[i]; }
+
 }  // namespace co
 
 }  // namespace tit

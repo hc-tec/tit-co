@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #include "atomic.h"
+#include "co_error.h"
 #include "sock_ctx.h"
 #include "log/logging.h"
 
@@ -34,7 +35,7 @@ int createEventfd()
 Epoll::Epoll(uint32 sched_id)
     : sched_id_(sched_id),
       wake_up_fd_(createEventfd()),
-      signal_(false) {
+      is_wakeup_(false) {
   ep_ = epoll_create1(0);
   if (ep_ < 0) {
     LOG(FATAL) << "epoll create err";
@@ -45,6 +46,7 @@ Epoll::Epoll(uint32 sched_id)
     LOG(FATAL) << "epoll_event calloc err";
     return;
   }
+  AddEvRead(wake_up_fd_, 0);
 }
 
 Epoll::~Epoll() {
@@ -153,21 +155,31 @@ bool Epoll::is_wakeup_fd(const epoll_event& ev) const {
   return ev.data.fd == wake_up_fd_;
 }
 
-void Epoll::Signal(char x) {
-  if (atomic_compare_swap(&signal_, false, true) == false) {
-    const int res = write(wake_up_fd_, &x, 1);
-    if (res != 1) {
-      LOG(ERROR) << "wake up fd error";
+void Epoll::Wakeup() {
+  uint64 one = 1;
+  if (atomic_compare_swap(&is_wakeup_, false, true) == false) {
+    while (true) {
+      const int res = write(wake_up_fd_, &one, sizeof(one));
+      if (res != -1) {
+        if (res < 10) break;
+        continue;
+      } else {
+        if (errno == EWOULDBLOCK || errno == EAGAIN) break;
+        if (errno == EINTR) continue;
+        LOG(ERROR) << "wake up fd: " << wake_up_fd_ << " error, " << stderror();
+        break;
+      }
     }
+
   }
 }
 
 void Epoll::HandleWakeUpEvent() {
-  int32 dummy;
+  uint64 one;
   while (true) {
-    int res = read(wake_up_fd_, &dummy, 4);
+    int res = read(wake_up_fd_, &one, sizeof(one));
     if (res != -1) {
-      if (res < 4) break;
+      if (res < 10) break;
       continue;
     } else {
       if (errno == EWOULDBLOCK || errno == EAGAIN) break;
@@ -176,7 +188,7 @@ void Epoll::HandleWakeUpEvent() {
       break;
     }
   }
-  atomic_swap(&signal_, false);
+  atomic_swap(&is_wakeup_, false);
 }
 
 void Epoll::Close() const {

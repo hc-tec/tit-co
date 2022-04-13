@@ -26,6 +26,8 @@ class Copoll {
   // push coroutine to idle list
   void Push(Coroutine* co);
 
+  Coroutine* operator[](int i);
+
  private:
   // default coroutine num
   const uint32 kPoolSize = 256;

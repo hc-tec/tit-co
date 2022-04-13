@@ -10,6 +10,8 @@
 
 #include "co_poll.h"
 #include "def.h"
+#include "epoll.h"
+#include "io_event.h"
 #include "task_manager.h"
 #include "base/platform_thread.h"
 #include "base/singleton.h"
@@ -87,14 +89,29 @@ class SchedulerImpl : public Scheduler {
   // when task isn't yield, it's a new task
   void AddNewTask(Closure func) {
     task_mgr_.AddNewTasks(func);
+    epoll_->Wakeup();
   }
 
   // when task is yield, and ready to resume, it's a ready task
   void AddReadyTask(Coroutine* co) {
     task_mgr_.AddReadyTasks(co);
+    epoll_->Wakeup();
   }
 
   /* Task Manager End */
+
+  /* Epoll Begin */
+
+  // add io event to running coroutine
+  void AddIoEvent(int fd, io_event_t event);
+
+  // delete io event to running coroutine
+  void DelIoEvent(int fd, io_event_t event);
+
+  // delete all io event to running coroutine
+  void DelIoEvent(int fd);
+
+  /* Epoll End */
 
   void Yield();
 
@@ -117,11 +134,13 @@ class SchedulerImpl : public Scheduler {
 
   const uint8 kShareStackSize = 8;
 
-  Thread* thread_;  // use pointer to save Thread, prevent thread destruction
-
   uint id_;  // scheduler id
   uint sched_num_;  // num of schedulers
   uint stack_size_;
+  int wait_ms_;  // epoll wait ms
+
+  Thread* thread_;  // use pointer to save Thread, prevent thread destruction
+  Epoll* epoll_;
 
   Coroutine* main_co_;
   Coroutine* running_co_;
