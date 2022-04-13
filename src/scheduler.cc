@@ -142,7 +142,7 @@ void SchedulerImpl::Recycle() {
 
 void SchedulerImpl::MainFunc(tb_context_from_t from) {
   ((Coroutine*)from.priv)->ctx_ = from.ctx;
-  auto scheduler = ThreadLocalSingleton<SchedulerImpl*>::instance();
+  auto scheduler = SchedulerTLS::instance();
   LOG(TRACE) << "func execute in scheduler" << scheduler;
   (scheduler->running()->func_)(); // run the coroutine function
   tb_context_jump(from.ctx, 0); // jump back to the from context
@@ -151,7 +151,7 @@ void SchedulerImpl::MainFunc(tb_context_from_t from) {
 void SchedulerImpl::Loop() {
   LOG(INFO) << "Scheduler: " << id_ << " Enter Loop";
 
-  ThreadLocalSingleton<SchedulerImpl*>::instance() = this;
+  SchedulerTLS::instance() = this;
 
   TaskManager::NewTaskList newTaskList;
   TaskManager::ReadyTaskList readyTaskList;

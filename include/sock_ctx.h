@@ -5,7 +5,10 @@
 #ifndef TIT_COROUTINE_SOCK_CTX_H
 #define TIT_COROUTINE_SOCK_CTX_H
 
+#include <map>
+
 #include "def.h"
+#include "base/singleton.h"
 
 namespace tit {
 
@@ -52,6 +55,14 @@ class SockCtx {
     uint64 write_clear_;  // use for quick clear
   };
 };
+
+
+typedef std::map<int, SockCtx> SockCtxMap;
+typedef base::Singleton<SockCtxMap> SockCtxSingleton;
+
+//#define SockCtxInstance SockCtxSingleton::instance();
+
+SockCtx& get_sock_ctx(int fd);
 
 }  // namespace co
 

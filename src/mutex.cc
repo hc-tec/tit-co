@@ -38,7 +38,7 @@ inline bool MutexImpl::TryLock() {
 }
 
 inline void MutexImpl::Lock() {
-  auto s = ThreadLocalSingleton<SchedulerImpl*>::instance();
+  auto s = SchedulerTLS::instance();
   _mtx.Lock();
   if (!_lock) {
     _lock = true;

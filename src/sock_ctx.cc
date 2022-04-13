@@ -62,6 +62,11 @@ uint32 SockCtx::write_co_id(uint32 sched_id) const {
   return sched_id == write_ev_.sched_id_ ? write_ev_.co_id_ : 0;
 }
 
+SockCtx& get_sock_ctx(int fd) {
+   SockCtxMap map = SockCtxSingleton::instance();
+   return map[fd];
+}
+
 }  // namespace co
 
 }  // namespace tit
