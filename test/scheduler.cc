@@ -6,7 +6,6 @@
 
 
 #include "log/logging.h"
-#include "stream.cc"
 #include "scheduler.h"
 
 using namespace tit;
