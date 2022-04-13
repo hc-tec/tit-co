@@ -4,7 +4,6 @@
 
 #include <iostream>
 
-
 #include "log/logging.h"
 #include "scheduler.h"
 

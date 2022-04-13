@@ -153,7 +153,7 @@ void SchedulerImpl::MainFunc(tb_context_from_t from) {
 }
 
 void SchedulerImpl::Loop() {
-  LOG(INFO) << "scheduler: " << id_ << " enter Loop";
+  LOG(INFO) << "scheduler: " << id_ << " enter loop";
 
   SchedulerTLS::instance() = this;
 
@@ -174,7 +174,7 @@ void SchedulerImpl::Loop() {
     for (int i = 0; i < events; ++i) {
       epoll_event& ev = (*epoll_)[i];
       // if fd is wake up fd, mostly not
-      if (unlikely(epoll_->is_wakeup_fd(ev))) {
+      if (epoll_->is_wakeup_fd(ev)) {
         epoll_->HandleWakeUpEvent();
         continue;
       }
