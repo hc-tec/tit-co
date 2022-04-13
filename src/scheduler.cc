@@ -6,6 +6,7 @@
 
 #include "atomic.h"
 #include "coroutine.h"
+#include "sock_ctx.h"
 #include "base/platform_thread.h"
 
 
@@ -43,6 +44,9 @@ SchedulerImpl::SchedulerImpl(uint sched_id,
     : id_(sched_id),
       sched_num_(sched_num),
       stack_size_(stack_size),
+      wait_ms_(-1),
+      thread_(nullptr),
+      epoll_(new Epoll(sched_id)),
       running_co_(nullptr),
       stop_(false) {
 
@@ -149,7 +153,7 @@ void SchedulerImpl::MainFunc(tb_context_from_t from) {
 }
 
 void SchedulerImpl::Loop() {
-  LOG(INFO) << "Scheduler: " << id_ << " Enter Loop";
+  LOG(INFO) << "scheduler: " << id_ << " enter Loop";
 
   SchedulerTLS::instance() = this;
 
@@ -157,8 +161,36 @@ void SchedulerImpl::Loop() {
   TaskManager::ReadyTaskList readyTaskList;
 
   while (!stop_) {
+    int events = epoll_->Wait(wait_ms_);
     if (stop_) break;
-    base::PlatformThread::Sleep(1000);
+
+    if (unlikely(events == -1)) {
+      if (errno != EINTR) {
+        LOG(ERROR) << "epoll wait error";
+      }
+      continue;
+    }
+
+    for (int i = 0; i < events; ++i) {
+      epoll_event& ev = (*epoll_)[i];
+      // if fd is wake up fd, mostly not
+      if (unlikely(epoll_->is_wakeup_fd(ev))) {
+        epoll_->HandleWakeUpEvent();
+        continue;
+      }
+      int fd = epoll_->user_data(ev);
+      auto& ctx = get_sock_ctx(fd);
+      uint32 read_co = 0, write_co = 0;
+      if ((ev.events | EPOLLIN) && !(ev.events | EPOLLOUT)) {
+        read_co = ctx.get_read_co_id(id_);
+      }
+      if (!(ev.events | EPOLLIN) && (ev.events | EPOLLOUT)) {
+        write_co = ctx.get_write_co_id(id_);
+      }
+      if (read_co) Resume(co_pool_[read_co]);
+      if (write_co) Resume(co_pool_[write_co]);
+    }
+
     do {
       task_mgr_.GetAllTasks(newTaskList, readyTaskList);
       if (!newTaskList.empty()) {
@@ -182,6 +214,24 @@ void SchedulerImpl::Loop() {
 
   }
 
+}
+
+void SchedulerImpl::AddIoEvent(int fd, io_event_t event) {
+  if (event == kEvRead) {
+    epoll_->AddEvRead(fd, running_co_->id_);
+  }
+  epoll_->AddEvWrite(fd, running_co_->id_);
+}
+
+void SchedulerImpl::DelIoEvent(int fd, io_event_t event) {
+  if (event == kEvRead) {
+    epoll_->DelEvRead(fd, running_co_->id_);
+  }
+  epoll_->DelEvWrite(fd, running_co_->id_);
+}
+
+void SchedulerImpl::DelIoEvent(int fd) {
+  epoll_->DelEvent(fd);
 }
 
 }  // namespace co
