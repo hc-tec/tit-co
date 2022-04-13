@@ -16,34 +16,34 @@ namespace co {
 class Epoll {
  public:
 
-  explicit Epoll(uint32 sched_id);
+  explicit Epoll(uint32 sched_id_);
   ~Epoll();
 
   /* IO event handle begin */
 
-  bool AddEvRead(uint32 sched_id, uint32 co);
-  bool AddEvWrite(uint32 sched_id, uint32 co);
-  void DelEvRead(uint32 sched_id, uint32 co);
-  void DelEvWrite(uint32 sched_id, uint32 co);
-  void DelEvent(uint32 sched_id);
+  bool AddEvRead(int fd, uint32 co_id) const;
+  bool AddEvWrite(int fd, uint32 co_id) const;
+  void DelEvRead(int fd, uint32 co_id) const;
+  void DelEvWrite(int fd, uint32 co_id) const;
+  void DelEvent(int fd) const;
 
   /* IO event handle end */
 
   /* wake up handle begin */
 
-  bool is_wakeup_fd(const epoll_event& ev);
+  bool is_wakeup_fd(const epoll_event& ev) const;
   void Signal(char x = 'c');
   void HandleWakeUpEvent();
 
   /* wake up handle end */
 
-  epoll_event& operator[](int i);
-  int user_data(const epoll_event& ev);
+  epoll_event& operator[](int i) { return ev_[i]; };
+  int user_data(const epoll_event& ev) { return ev.data.fd; };
 
   /* epoll handle begin */
 
   int Wait(int ms);
-  void Close();
+  void Close() const;
 
   /* epoll handle end */
 
