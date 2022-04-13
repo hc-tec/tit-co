@@ -20,15 +20,15 @@ void SockCtx::AddEvWrite(uint32 sched_id, uint32 co_id) {
   write_ev_.co_id_ = co_id;
 }
 
-void SockCtx::DelEvRead(uint32 sched_id, uint32 co_id) {
+void SockCtx::DelEvRead() {
   read_clear_ = 0;
 }
 
-void SockCtx::DelEvWrite(uint32 sched_id, uint32 co_id) {
+void SockCtx::DelEvWrite() {
   write_clear_ = 0;
 }
 
-void SockCtx::DelEvent(uint32 sched_id) {
+void SockCtx::DelEvent() {
   memset(this, 0, sizeof(*this));
 }
 
@@ -54,11 +54,11 @@ bool SockCtx::has_ev_write(uint32 sched_id) const {
         write_ev_.co_id_ != 0;
 }
 
-uint32 SockCtx::read_co_id(uint32 sched_id) const {
+uint32 SockCtx::get_read_co_id(uint32 sched_id) const {
   return sched_id == read_ev_.sched_id_ ? read_ev_.co_id_ : 0;
 }
 
-uint32 SockCtx::write_co_id(uint32 sched_id) const {
+uint32 SockCtx::get_write_co_id(uint32 sched_id) const {
   return sched_id == write_ev_.sched_id_ ? write_ev_.co_id_ : 0;
 }
 

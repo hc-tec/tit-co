@@ -26,9 +26,9 @@ class SockCtx {
   // and low 32 bit as coroutine ID
   void AddEvRead(uint32 sched_id, uint32 co_id);
   void AddEvWrite(uint32 sched_id, uint32 co_id);
-  void DelEvRead(uint32 sched_id, uint32 co_id);
-  void DelEvWrite(uint32 sched_id, uint32 co_id);
-  void DelEvent(uint32 sched_id);
+  void DelEvRead();
+  void DelEvWrite();
+  void DelEvent();
 
   bool has_event() const;
   bool has_ev_read() const;
@@ -36,8 +36,8 @@ class SockCtx {
   bool has_ev_write() const;
   bool has_ev_write(uint32 sched_id) const;
 
-  uint32 read_co_id(uint32 sched_id) const;
-  uint32 write_co_id(uint32 sched_id) const;
+  uint32 get_read_co_id(uint32 sched_id) const;
+  uint32 get_write_co_id(uint32 sched_id) const;
 
  private:
 
