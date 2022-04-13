@@ -13,84 +13,38 @@ namespace tit {
 
 namespace co {
 
-//extern __thread SchedulerImpl* gSched;
-
-class MutexImpl {
- public:
-  MutexImpl() : _lock(false) {}
-  ~MutexImpl() = default;
-
-  void Lock();
-
-  void Unlock();
-
-  bool TryLock();
-
- private:
-  Mutex _mtx;
-  std::deque<Coroutine*> _co_wait;
-  bool _lock;
-};
-
-inline bool MutexImpl::TryLock() {
-  MutexGuard g(_mtx);
-  return _lock ? false : (_lock = true);
-}
-
-inline void MutexImpl::Lock() {
-  auto s = SchedulerTLS::instance();
-  _mtx.Lock();
-  if (!_lock) {
-    _lock = true;
-    _mtx.Unlock();
+void Mutex::Lock() {
+  auto scheduler = SchedulerTLS::instance();
+  mutex_.Lock();
+  if (lock_) {
+    Coroutine* co = scheduler->running();
+    if (co->scheduler_ != scheduler) co->scheduler_ = scheduler;
+    wait_queue_.push(co);
+    mutex_.UnLock();
+    scheduler->Yield();
   } else {
-    Coroutine* co = s->running();
-    if (co->scheduler_ != s) co->scheduler_ = s;
-    _co_wait.push_back(co);
-    _mtx.Unlock();
-    s->Yield();
+    lock_ = true;
+    mutex_.UnLock();
   }
 }
 
-inline void MutexImpl::Unlock() {
-  _mtx.Lock();
-  if (_co_wait.empty()) {
-    _lock = false;
-    _mtx.Unlock();
+void Mutex::UnLock() {
+  mutex_.Lock();
+  if (!wait_queue_.empty()) {
+    Coroutine* co = wait_queue_.front();
+    wait_queue_.pop();
+    mutex_.UnLock();
+    (static_cast<SchedulerImpl*>(co->scheduler_))->AddReadyTask(co);
   } else {
-    Coroutine* co = _co_wait.front();
-    _co_wait.pop_front();
-    _mtx.Unlock();
-    ((SchedulerImpl*)co->scheduler_)->AddReadyTask(co);
+    lock_ = false;
+    mutex_.UnLock();
   }
 }
 
-// memory: |4(refn)|4|MutexImpl|
-Mutex::Mutex() {
-  _p = (uint32_t *) malloc(sizeof(MutexImpl) + 8);
-  _p[0] = 1; // refn
-  new (_p + 2) MutexImpl;
+bool Mutex::TryLock() {
+  ThreadMutexLockGuardType guard(mutex_);
+  return lock_ ? false : (lock_ = true);
 }
-
-Mutex::~Mutex() {
-  if (_p && atomic_dec(_p) == 0) {
-    ((MutexImpl*)(_p + 2))->~MutexImpl();
-    ::free(_p);
-  }
-}
-
-void Mutex::Lock() const {
-  ((MutexImpl*)(_p + 2))->Lock();
-}
-
-void Mutex::Unlock() const {
-  ((MutexImpl*)(_p + 2))->Unlock();
-}
-
-bool Mutex::TryLock() const {
-  return ((MutexImpl*)(_p + 2))->TryLock();
-}
-
 
 }  // namespace co
 }  // namespace tit
