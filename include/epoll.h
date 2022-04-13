@@ -32,7 +32,7 @@ class Epoll {
   /* wake up handle begin */
 
   bool is_wakeup_fd(const epoll_event& ev) const;
-  void Signal(char x = 'c');
+  void Wakeup();
   void HandleWakeUpEvent();
 
   /* wake up handle end */
@@ -56,7 +56,7 @@ class Epoll {
   int wake_up_fd_;
   epoll_event* ev_;
 
-  bool signal_;
+  bool is_wakeup_;
 
 };
 
