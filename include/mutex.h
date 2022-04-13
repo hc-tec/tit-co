@@ -36,6 +36,26 @@ class Mutex {
   bool lock_;
 };
 
+class MutexGuard {
+ public:
+  explicit MutexGuard(Mutex& mutex) : mutex_(mutex) {
+    mutex_.Lock();
+  }
+
+  explicit MutexGuard(Mutex* mutex) : mutex_(*mutex) {
+    mutex_.Lock();
+  }
+
+  ~MutexGuard() {
+    mutex_.UnLock();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MutexGuard);
+
+  Mutex& mutex_;
+};
+
 
 }  // namespace co
 
