@@ -234,6 +234,11 @@ void SchedulerImpl::DelIoEvent(int fd) {
   epoll_->DelEvent(fd);
 }
 
+bool SchedulerImpl::on_stack(void* p) const {
+  Stack* stack = &stacks_[running_co_->stack_id_];
+  return (stack->p <= p) && (p < stack->top);
+}
+
 }  // namespace co
 
 }  // namespace tit

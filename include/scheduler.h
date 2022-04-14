@@ -113,6 +113,12 @@ class SchedulerImpl : public Scheduler {
 
   /* Epoll End */
 
+  /* Stack Begin */
+  // return true if p is on running coroutine' stack
+  bool on_stack(void* p) const;
+
+  /* Stack End */
+
   void Yield();
 
  private:
