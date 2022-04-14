@@ -8,6 +8,7 @@
 
 #include "atomic.h"
 #include "coroutine.h"
+#include "scheduler.h"
 
 namespace tit {
 
@@ -37,6 +38,7 @@ void ChannelImpl::Read(void *p) {
     memcpy(p, buf_ + rx_, blk_size_);
     rx_ += blk_size_;
     if (rx_ == buf_size_) rx_ = 0;
+    mutex_.UnLock();
   } else {
     // empty
     if (!full_) {
@@ -77,6 +79,8 @@ void ChannelImpl::Read(void *p) {
           return;
         }
       }
+      full_ = false;
+      mutex_.UnLock();
     }
   }
 }
@@ -88,6 +92,7 @@ void ChannelImpl::Write(const void* p) {
     wx_ += blk_size_;
     if (wx_ == buf_size_) wx_ = 0;
     if (wx_ == rx_) full_ = true;
+    mutex_.UnLock();
   } else {
     if (!full_) {
       while (!wait_queue_.empty())  {

@@ -62,7 +62,7 @@ static WaitCtx::Ptr CreateWaitCtx(WaitCtx&& ctx) {
 class ChannelImpl {
  public:
   // smart pointer type of this class
-  typedef std::unique_ptr<ChannelImpl> Ptr;
+  typedef std::shared_ptr<ChannelImpl> Ptr;
 
   ChannelImpl(uint32 buf_size, uint32 blk_size, uint32 ms)
       : buf_size_(buf_size),
@@ -76,7 +76,7 @@ class ChannelImpl {
   // use this factory method to get a smart pointer version of this class
   // users don't need to care about what specific smart pointer is
   static Ptr Create(uint32 buf_size, uint32 blk_size, uint32 ms) {
-    return std::make_unique<ChannelImpl>(buf_size, blk_size, ms);
+    return std::make_shared<ChannelImpl>(buf_size, blk_size, ms);
   }
 
   // create wait context
@@ -102,22 +102,30 @@ class ChannelImpl {
 template<typename T>
 class Channel {
  public:
-  Channel(int cap = 1, uint32 ms = -1) {
-    impl = ChannelImpl::Create(cap * sizeof(T),
+  explicit Channel(int cap = 1, uint32 ms = -1) {
+    impl_ = ChannelImpl::Create(cap * sizeof(T),
                                sizeof(T),
                                ms);
   }
 
-  void operator<<(const T& p) {
-    impl->Write(&p);
+  ~Channel() = default;
+
+  Channel(Channel&& c) : impl_(std::move(c.impl_)) {}
+
+  Channel(const Channel& c) {
+    impl_ = c.impl_;
   }
 
-  void operator>>(T& p) {
-    impl->Read(&p);
+  void operator>>(T& p) const {
+    impl_->Read(&p);
   }
 
- private:
-  ChannelImpl::Ptr impl;
+  void operator<<(const T& p) const {
+    impl_->Write(&p);
+  }
+
+// private:
+  ChannelImpl::Ptr impl_;
 };
 
 

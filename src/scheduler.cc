@@ -239,6 +239,11 @@ bool SchedulerImpl::on_stack(void* p) const {
   return (stack->p <= p) && (p < stack->top);
 }
 
+void SchedulerImpl::Yield() {
+  if (running_co_->scheduler_ != this) running_co_->scheduler_ = this;
+  tb_context_jump(main_co_->ctx_, running_co_);
+}
+
 }  // namespace co
 
 }  // namespace tit
