@@ -5,6 +5,7 @@
 #ifndef TIT_COROUTINE_COROUTINE_H
 #define TIT_COROUTINE_COROUTINE_H
 
+#include "channel.h"
 #include "closure.h"
 #include "def.h"
 #include "memory"
@@ -38,6 +39,7 @@ struct Coroutine {
   uint8 state_;  // coroutine state
   Stream stack_;  // private stack of coroutine
 
+  WaitCtx::Ptr wait_ctx_; // wait context, cause yield on mutex or channel...
   tb_context_t ctx_;  // context, a pointer points to the stack bottom
 
   // a coroutine hold a function

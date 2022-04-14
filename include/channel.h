@@ -22,17 +22,40 @@ struct Coroutine;
 
 typedef base::MutexLock ThreadMutex;
 
-typedef struct wait_ctx {
+typedef struct WaitCtx {
 
-  typedef std::shared_ptr<wait_ctx> Ptr;
+  WaitCtx() = default;
+
+  WaitCtx(WaitCtx* ctx)
+      : co_(ctx->co_),
+        state_(ctx->state_),
+        buf_(ctx->buf_) {
+    ctx->co_ = nullptr;
+    ctx->buf_ = nullptr;
+  }
+
+  WaitCtx(WaitCtx&& ctx)
+      : co_(ctx.co_),
+        state_(ctx.state_),
+        buf_(ctx.buf_) {}
+
+  typedef std::shared_ptr<WaitCtx> Ptr;
 
   Coroutine* co_;
   uint8 state_;
   void* buf_;
-} wait_ctx;
+} WaitCtx;
 
-static wait_ctx::Ptr CreateWaitCtx() {
-  return std::make_shared<wait_ctx>();
+static WaitCtx::Ptr CreateWaitCtx() {
+  return std::make_shared<WaitCtx>();
+}
+
+static WaitCtx::Ptr CreateWaitCtx(WaitCtx* ctx) {
+  return std::make_shared<WaitCtx>(ctx);
+}
+
+static WaitCtx::Ptr CreateWaitCtx(WaitCtx&& ctx) {
+  return std::make_shared<WaitCtx>(std::move(ctx));
 }
 
 
@@ -56,6 +79,11 @@ class ChannelImpl {
     return std::make_unique<ChannelImpl>(buf_size, blk_size, ms);
   }
 
+  // create wait context
+  // buf is variable pointer from outside,
+  // and it will keep in wait_ctx->buf
+  WaitCtx::Ptr CreateWaitCtxInfo(Coroutine* co, void* buf);
+
   void Read(void* p);
   void Write(const void* p);
 
@@ -68,7 +96,7 @@ class ChannelImpl {
   uint32 ms_;
   bool full_;
   ThreadMutex mutex_;
-  std::queue<wait_ctx*> wait_queue_;
+  std::queue<WaitCtx::Ptr> wait_queue_;
 };
 
 template<typename T>
