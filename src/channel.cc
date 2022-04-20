@@ -19,7 +19,7 @@ namespace co {
 WaitCtx::Ptr ChannelImpl::CreateWaitCtxInfo(Coroutine *co, void *buf) {
   WaitCtx* wait_ctx;
 
-  SchedulerImpl* scheduler = SchedulerTLS::instance();
+  SchedulerImpl* scheduler = TLSScheduler::instance();
   bool on_stack = scheduler->on_stack(buf);
 
   if (on_stack) {
@@ -36,7 +36,7 @@ WaitCtx::Ptr ChannelImpl::CreateWaitCtxInfo(Coroutine *co, void *buf) {
 
 void ChannelImpl::Read(void *p) {
   mutex_.Lock();
-  if (rx_ == wx_) {
+  if (rx_ != wx_) {
     memcpy(p, buf_ + rx_, blk_size_);
     rx_ += blk_size_;
     if (rx_ == buf_size_) rx_ = 0;
@@ -44,7 +44,7 @@ void ChannelImpl::Read(void *p) {
   } else {
     // empty
     if (!full_) {
-      SchedulerImpl* scheduler = SchedulerTLS::instance();
+      SchedulerImpl* scheduler = TLSScheduler::instance();
       Coroutine* co = scheduler->running();
 
       WaitCtx::Ptr wait_ctx = CreateWaitCtxInfo(co, p);
@@ -92,7 +92,7 @@ void ChannelImpl::Read(void *p) {
 
 void ChannelImpl::Write(const void* p) {
   mutex_.Lock();
-  if (wx_ == rx_) {
+  if (wx_ != rx_) {
     memcpy(buf_ + wx_, p, blk_size_);
     wx_ += blk_size_;
     if (wx_ == buf_size_) wx_ = 0;
@@ -117,7 +117,7 @@ void ChannelImpl::Write(const void* p) {
       if (wx_ == rx_) full_ = true;
       mutex_.UnLock();
     } else {
-      SchedulerImpl* scheduler = SchedulerTLS::instance();
+      SchedulerImpl* scheduler = TLSScheduler::instance();
       Coroutine* co = scheduler->running();
 
       WaitCtx::Ptr wait_ctx = CreateWaitCtxInfo(co, const_cast<void*>(p));

@@ -14,7 +14,7 @@ namespace tit {
 namespace co {
 
 void Mutex::Lock() {
-  auto scheduler = SchedulerTLS::instance();
+  auto scheduler = TLSScheduler::instance();
   mutex_.Lock();
   if (lock_) {
     Coroutine* co = scheduler->running();

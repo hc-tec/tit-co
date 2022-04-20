@@ -5,6 +5,7 @@
 #include "task_manager.h"
 #include "coroutine.h"
 #include "closure.h"
+#include "log/logging.h"
 
 namespace tit {
 

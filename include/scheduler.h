@@ -172,7 +172,9 @@ class SchedulerImpl : public Scheduler {
   bool stop_;
 };
 
-typedef ThreadLocalSingleton<SchedulerImpl*> SchedulerTLS;
+typedef ThreadLocalSingleton<SchedulerImpl*> TLSScheduler;
+
+bool timeout();
 
 }  // namespace co
 

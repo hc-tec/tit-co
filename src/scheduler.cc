@@ -147,7 +147,7 @@ void SchedulerImpl::Recycle() {
 
 void SchedulerImpl::MainFunc(tb_context_from_t from) {
   ((Coroutine*)from.priv)->ctx_ = from.ctx;
-  auto scheduler = SchedulerTLS::instance();
+  auto scheduler = TLSScheduler::instance();
   LOG(TRACE) << "func execute in scheduler" << scheduler;
   (scheduler->running()->func_)(); // run the coroutine function
   tb_context_jump(from.ctx, 0); // jump back to the from context
@@ -156,7 +156,7 @@ void SchedulerImpl::MainFunc(tb_context_from_t from) {
 void SchedulerImpl::Loop() {
   LOG(INFO) << "scheduler: " << id_ << " enter loop";
 
-  SchedulerTLS::instance() = this;
+  TLSScheduler::instance() = this;
 
   TaskManager::NewTaskList newTaskList;
   TaskManager::ReadyTaskList readyTaskList;
@@ -263,7 +263,9 @@ void SchedulerImpl::AddTimer(uint32 ms) {
   running_co_->timer_id_ = timer_mgr.AddTimer(ms, running_co_);
 }
 
-
+bool timeout() {
+  return TLSScheduler::instance() && TLSScheduler::instance()->is_timeout();
+}
 
 }  // namespace co
 
