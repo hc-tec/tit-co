@@ -10,6 +10,8 @@
 #include "coroutine.h"
 #include "scheduler.h"
 
+#include "log/logging.h"
+
 namespace tit {
 
 namespace co {
@@ -49,17 +51,18 @@ void ChannelImpl::Read(void *p) {
       wait_queue_.push(wait_ctx);
       mutex_.UnLock();
 
+
       co->wait_ctx_ = wait_ctx;
 
       if (co->scheduler_ != scheduler) co->scheduler_ = scheduler;
 
-      // TODO: Add Timer
-
+      if (ms_ != static_cast<uint32>(-1)) scheduler->AddTimer(ms_);
       scheduler->Yield();
 
-      // TODO: if timeout
-      if (wait_ctx->buf_ != p) {
-        memcpy(p, wait_ctx->buf_, blk_size_);
+      if (!scheduler->is_timeout()) {
+        if (wait_ctx->buf_ != p) {
+          memcpy(p, wait_ctx->buf_, blk_size_);
+        }
       }
     } else {
       memcpy(p, buf_ + rx_, blk_size_);
@@ -74,6 +77,7 @@ void ChannelImpl::Read(void *p) {
           if (wx_ == buf_size_) wx_ = 0;
           mutex_.UnLock();
 
+
           Coroutine* wait_co = wait_ctx->co_;
           static_cast<SchedulerImpl*>(wait_co->scheduler_)->AddReadyTask(wait_co);
           return;
@@ -81,6 +85,7 @@ void ChannelImpl::Read(void *p) {
       }
       full_ = false;
       mutex_.UnLock();
+
     }
   }
 }
@@ -126,11 +131,10 @@ void ChannelImpl::Write(const void* p) {
 
       if (co->scheduler_ != scheduler) co->scheduler_ = scheduler;
 
-      // TODO: Add Timer
-
+      if (ms_ != static_cast<uint32>(-1)) scheduler->AddTimer(ms_);
       scheduler->Yield();
 
-      // TODO: if timeout
+      if (!scheduler->is_timeout()) {}
     }
   }
 }
