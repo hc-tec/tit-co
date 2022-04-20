@@ -11,6 +11,7 @@
 #include "memory"
 #include "stream.h"
 #include "context/context.h"
+#include "timer_manager.h"
 
 namespace tit {
 
@@ -41,6 +42,8 @@ struct Coroutine {
 
   WaitCtx::Ptr wait_ctx_; // wait context, cause yield on mutex or channel...
   tb_context_t ctx_;  // context, a pointer points to the stack bottom
+
+  timer_id_t timer_id_;
 
   // a coroutine hold a function
   // when coroutine if first created, we should call the function

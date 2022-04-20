@@ -13,6 +13,7 @@
 #include "epoll.h"
 #include "io_event.h"
 #include "task_manager.h"
+#include "timer_manager.h"
 #include "base/platform_thread.h"
 #include "base/singleton.h"
 #include "base/simple_thread.h"
@@ -100,6 +101,16 @@ class SchedulerImpl : public Scheduler {
 
   /* Task Manager End */
 
+  /* Timer Manager Begin */
+
+  // add timeout task in running coroutine
+  void AddTimer(uint32 ms);
+
+  // is running coroutine timeout
+  bool is_timeout() const { return timeout_; }
+
+  /* Timer Manager End */
+
   /* Epoll Begin */
 
   // add io event to running coroutine
@@ -143,7 +154,7 @@ class SchedulerImpl : public Scheduler {
   uint id_;  // scheduler id
   uint sched_num_;  // num of schedulers
   uint stack_size_;
-  int wait_ms_;  // epoll wait ms
+  uint wait_ms_;  // epoll wait ms
 
   Thread* thread_;  // use pointer to save Thread, prevent thread destruction
   Epoll* epoll_;
@@ -155,7 +166,9 @@ class SchedulerImpl : public Scheduler {
   Copoll co_pool_;
 
   TaskManager task_mgr_;
+  TimerManager timer_mgr;
 
+  bool timeout_;  // is running coroutine timeout
   bool stop_;
 };
 

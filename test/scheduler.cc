@@ -34,10 +34,14 @@ void g (int a) {
   scheduler->AddNewTask([=](){
     int recv;
     chan >> recv;
+
     LOG(INFO) << "revc: " << recv;
 //    f();
   });
-
+  int recv;
+  chan >> recv;
+  LOG(INFO) << "revc: " << recv;
+  chan << 11;
 //  scheduler->AddNewTask([](){
 //    f();
 //  });

@@ -48,6 +48,7 @@ SchedulerImpl::SchedulerImpl(uint sched_id,
       thread_(nullptr),
       epoll_(new Epoll(sched_id)),
       running_co_(nullptr),
+      timeout_(false),
       stop_(false) {
 
   stacks_ = static_cast<Stack*>(calloc(kShareStackSize, stack_size));
@@ -210,6 +211,19 @@ void SchedulerImpl::Loop() {
 
     } while(0);
 
+    do {
+      wait_ms_ = timer_mgr.CollectTimeoutTasks(readyTaskList);
+      if (!readyTaskList.empty()) {
+        LOG(TRACE) << ">> resume timeout ready tasks, num: " << readyTaskList.size();
+        timeout_ = true;  // running coroutine is timeout
+        for (Coroutine* co : readyTaskList) {
+          Resume(co);
+        }
+        timeout_ = false;  // reset timeout
+        readyTaskList.clear();
+      }
+    } while (0);
+
     running_co_ = nullptr;
 
   }
@@ -243,6 +257,13 @@ void SchedulerImpl::Yield() {
   if (running_co_->scheduler_ != this) running_co_->scheduler_ = this;
   tb_context_jump(main_co_->ctx_, running_co_);
 }
+
+void SchedulerImpl::AddTimer(uint32 ms) {
+  if (wait_ms_ > ms) wait_ms_ = ms;
+  running_co_->timer_id_ = timer_mgr.AddTimer(ms, running_co_);
+}
+
+
 
 }  // namespace co
 
