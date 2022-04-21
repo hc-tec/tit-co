@@ -230,11 +230,11 @@ void SchedulerImpl::Loop() {
 
 }
 
-void SchedulerImpl::AddIoEvent(int fd, io_event_t event) {
+bool SchedulerImpl::AddIoEvent(int fd, io_event_t event) {
   if (event == kEvRead) {
-    epoll_->AddEvRead(fd, running_co_->id_);
+    return epoll_->AddEvRead(fd, running_co_->id_);
   }
-  epoll_->AddEvWrite(fd, running_co_->id_);
+  return epoll_->AddEvWrite(fd, running_co_->id_);
 }
 
 void SchedulerImpl::DelIoEvent(int fd, io_event_t event) {
@@ -263,8 +263,21 @@ void SchedulerImpl::AddTimer(uint32 ms) {
   running_co_->timer_id_ = timer_mgr.AddTimer(ms, running_co_);
 }
 
+void SchedulerImpl::Sleep(uint32 ms) {
+  if (wait_ms_ > ms) wait_ms_ = ms;
+  timer_mgr.AddTimer(ms, running_co_);
+  Yield();
+}
+
 bool timeout() {
   return TLSScheduler::instance() && TLSScheduler::instance()->is_timeout();
+}
+
+void sleep(uint32 ms) {
+  auto scheduler = TLSScheduler::instance();
+  if (scheduler) {
+    scheduler->Sleep(ms);
+  }
 }
 
 }  // namespace co

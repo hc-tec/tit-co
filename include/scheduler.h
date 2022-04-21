@@ -80,8 +80,6 @@ class SchedulerImpl : public Scheduler {
   // stop the scheduler, free some pointer memory
   void Stop();
 
-  void Sleep();
-
   // schedule tasks and io events of coroutines
   void Loop();
 
@@ -109,12 +107,14 @@ class SchedulerImpl : public Scheduler {
   // is running coroutine timeout
   bool is_timeout() const { return timeout_; }
 
+  void Sleep(uint32 ms);
+
   /* Timer Manager End */
 
   /* Epoll Begin */
 
   // add io event to running coroutine
-  void AddIoEvent(int fd, io_event_t event);
+  bool AddIoEvent(int fd, io_event_t event);
 
   // delete io event to running coroutine
   void DelIoEvent(int fd, io_event_t event);
