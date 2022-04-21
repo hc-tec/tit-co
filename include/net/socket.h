@@ -7,7 +7,8 @@
 
 #include "sock.h"
 #include "address.h"
-#include "tcp.h"
+#include "micros.h"
+#include "conn.h"
 
 namespace tit {
 
@@ -15,19 +16,24 @@ namespace co {
 
 static constexpr int kInvalidFd = -1;
 
+enum Type {
+  kTcp = SOCK_STREAM,
+  kUdp = SOCK_DGRAM
+};
+
+enum Family {
+  kIpv4 = AF_INET,
+  kIpv6 = AF_INET6
+};
+
+template <typename ConnFactory>
 class Socket {
  public:
   using Ptr = std::shared_ptr<Socket>;
 
-  enum Type {
-    kTcp = SOCK_STREAM,
-    kUdp = SOCK_DGRAM
-  };
+  using ConnType = typename ConnFactory::type;
 
-  enum Family {
-    kIpv4 = AF_INET,
-    kIpv6 = AF_INET6
-  };
+  Socket() : Socket(kIpv4, kTcp, 0, true) {}
 
   Socket(Family family, Type type, int protocol, bool create = true)
       : fd_(kInvalidFd),
@@ -97,45 +103,6 @@ class Socket {
   Address::Ptr local_addr() { return local_addr_; }
   Address::Ptr remote_addr() { return remote_addr_; }
 
- private:
-  int fd_;
-  Family family_;
-  Type type_;
-  int protocol_;
-
-
-  ConnFactory conn_factory_;
-  ConnFactory::type conn_;
-
-  Address::Ptr local_addr_;
-  Address::Ptr remote_addr_;
-
- protected:
-  bool connected_;
-};
-
-class TcpClientSocket : public Socket {
- public:
-  using Ptr = std::shared_ptr<TcpClientSocket>;
-
-  TcpClientSocket(Family family,
-                  Type type,
-                  int protocol,
-                  bool create = true)
-                  : Socket(family,type,protocol,create) {}
-
-  static Ptr Create(Family family, Type type, int protocol) {
-    return std::make_shared<TcpClientSocket>(family, type, protocol, false);
-  }
-
-  bool Connect(const Address::Ptr& address, uint64_t timeout_ms = -1);
-
-};
-
-class TcpServerSocket : public Socket {
- public:
-  using Ptr = std::shared_ptr<TcpServerSocket>;
-
   bool Bind(const Address::Ptr& addr) {
     CHECK(is_valid());
     if (co::bind(fd(), addr->addr(), addr->addrlen())) {
@@ -154,11 +121,90 @@ class TcpServerSocket : public Socket {
     return true;
   }
 
-  TcpClientSocket::Ptr Accept();
+  Ptr Accept();
+
+  bool Connect(const Address::Ptr& address, uint64_t timeout_ms = -1);
 
  private:
+
   static const int kMaxConn = 4096;
+
+  int fd_;
+  Family family_;
+  Type type_;
+  int protocol_;
+
+  ConnFactory conn_factory_;
+  ConnType conn_;
+
+  Address::Ptr local_addr_;
+  Address::Ptr remote_addr_;
+
+ protected:
+  bool connected_;
 };
+
+template <typename ConnFactory>
+void Socket<ConnFactory>::InitLocalAddr() {
+  if (local_addr_) return;
+  switch (family_) {
+    case AF_INET:
+      local_addr_.reset(new IPv4Address());
+      break;
+    case AF_INET6:
+      local_addr_.reset(new IPv6Address());
+      break;
+  }
+  socklen_t addrlen = local_addr_->addrlen();
+  if (getsockname(fd_, local_addr_->addr(), &addrlen)) {
+    LOG(ERROR) << "unknown address";
+  }
+}
+
+template <typename ConnFactory>
+void Socket<ConnFactory>::InitRemoteAddr() {
+  if (remote_addr_) return;
+  switch (family_) {
+    case AF_INET:
+      remote_addr_.reset(new IPv4Address());
+      break;
+    case AF_INET6:
+      remote_addr_.reset(new IPv6Address());
+      break;
+  }
+  socklen_t addrlen = remote_addr_->addrlen();
+  if (getsockname(fd_, remote_addr_->addr(), &addrlen)) {
+    LOG(ERROR) << "unknown address";
+  }
+}
+
+template <typename ConnFactory>
+typename Socket<ConnFactory>::Ptr Socket<ConnFactory>::Accept() {
+  CHECK(is_valid());
+  Socket::Ptr sock = Socket::Create(family(), type(), protocol());
+  int client_sock = co::accept(fd(), nullptr, nullptr);
+  if (client_sock < 0) {
+    LOG(ERROR) << "accept error";
+  }
+  sock->Init(client_sock);
+  return sock;
+}
+
+template <typename ConnFactory>
+bool Socket<ConnFactory>::Connect(const Address::Ptr& address,
+                              uint64_t ms) {
+  CHECK(is_valid());
+  if(co::connect(fd(), address->addr(), address->addrlen(), ms)) {
+    LOG(ERROR) << "connect error";
+    return false;
+  }
+
+  InitLocalAddr();
+  InitRemoteAddr();
+  return true;
+}
+
+using TcpSocket = Socket<TcpConnFactory>;
 
 }  // namespace co
 
