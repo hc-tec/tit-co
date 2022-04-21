@@ -28,6 +28,11 @@ namespace tit {
 
 namespace co {
 
+enum Family {
+  kIpv4 = AF_INET,
+  kIpv6 = AF_INET6
+};
+
 class Address {
  public:
   using Ptr = std::shared_ptr<Address>;
@@ -39,6 +44,9 @@ class Address {
 
   virtual uint16 port() const = 0;
   virtual void set_port(uint16 port) = 0;
+
+  virtual Family family() = 0;
+
   virtual std::string ToString() = 0;
 };
 
@@ -80,6 +88,8 @@ class IPv4Address : public Address {
   }
 
   socklen_t addrlen() override { return sizeof(addr_); }
+
+  Family family() override { return kIpv4; }
 
   std::string ToString() override {
     return to_string(&addr_);
@@ -128,6 +138,8 @@ class IPv6Address : public Address {
   }
 
   socklen_t addrlen() override { return sizeof(addr_); }
+
+  Family family() override { return kIpv6; }
 
   std::string ToString() override {
     return "ip v6 ...";

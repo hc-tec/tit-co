@@ -21,11 +21,6 @@ enum Type {
   kUdp = SOCK_DGRAM
 };
 
-enum Family {
-  kIpv4 = AF_INET,
-  kIpv6 = AF_INET6
-};
-
 template <typename ConnFactory>
 class Socket {
  public:
@@ -33,23 +28,22 @@ class Socket {
 
   using ConnType = typename ConnFactory::type;
 
-  Socket() : Socket(kIpv4, kTcp, 0, true) {}
+  Socket() : Socket(kIpv4, kTcp, 0) {}
 
-  Socket(Family family, Type type, int protocol, bool create = true)
+  Socket(Family family, Type type, int protocol)
       : fd_(kInvalidFd),
         family_(family),
         type_(type),
         protocol_(protocol),
-        connected_(false) {
-    if (create) {
-      fd_ = socket(family, type, protocol);
-      Init(fd_);
-    }
-  }
+        connected_(false) {}
 
   static Ptr Create(Family family, Type type, int protocol) {
-    return std::make_shared<Socket>(family, type, protocol, false);
+    return std::make_shared<Socket>(family, type, protocol);
   }
+
+//  static Ptr Create(Socket<ConnFactory>* sock) {
+//    return std::make_shared<Socket>(sock);
+//  }
 
   void Init(int fd) {
     if (unlikely(fd == kInvalidFd)) {
@@ -61,6 +55,11 @@ class Socket {
       InitLocalAddr();
       InitRemoteAddr();
     }
+  }
+
+  void NewSocket() {
+    fd_ = socket(family_, type_, protocol_);
+    Init(fd_);
   }
 
   virtual int Recv(void* buf, int n, int ms) {
@@ -104,7 +103,7 @@ class Socket {
   Address::Ptr remote_addr() { return remote_addr_; }
 
   bool Bind(const Address::Ptr& addr) {
-    CHECK(is_valid());
+//    CHECK(is_valid());
     if (co::bind(fd(), addr->addr(), addr->addrlen())) {
       LOG(ERROR) << "bind error";
       return false;
@@ -124,6 +123,8 @@ class Socket {
   Ptr Accept();
 
   bool Connect(const Address::Ptr& address, uint64_t timeout_ms = -1);
+
+  ConnType get_conn() { return conn_; }
 
  private:
 
