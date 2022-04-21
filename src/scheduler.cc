@@ -269,6 +269,10 @@ void SchedulerImpl::Sleep(uint32 ms) {
   Yield();
 }
 
+//void Scheduler::go(Closure func) {
+//  ((SchedulerImpl*)this)->AddNewTask(func);
+//}
+
 bool timeout() {
   return TLSScheduler::instance() && TLSScheduler::instance()->is_timeout();
 }
@@ -279,6 +283,11 @@ void sleep(uint32 ms) {
     scheduler->Sleep(ms);
   }
 }
+
+void go(Closure func) {
+  ((SchedulerImpl*) schedulerManager().NextScheduler())->AddNewTask(std::move(func));
+}
+
 
 }  // namespace co
 

@@ -172,13 +172,21 @@ class SchedulerImpl : public Scheduler {
   bool stop_;
 };
 
+inline co::SchedulerManager& schedulerManager() {
+  static co::SchedulerManager schedulerManager(1, 1024*1024);
+  return schedulerManager;
+}
+
 typedef ThreadLocalSingleton<SchedulerImpl*> TLSScheduler;
 
 bool timeout();
 
+void go(Closure func);
+
 }  // namespace co
 
 }  // namespace tit
+
 
 
 
