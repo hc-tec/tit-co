@@ -1,0 +1,123 @@
+//
+// Created by titto on 2022/4/21.
+//
+
+#ifndef TIT_COROUTINE_ADDRESS_H
+#define TIT_COROUTINE_ADDRESS_H
+
+#include <memory>
+
+#include "log/logging.h"
+
+namespace tit {
+
+namespace co {
+
+class Address {
+ public:
+  using Ptr = std::shared_ptr<Address>;
+
+//  static Ptr Create(const char* host, uint16 port);
+
+  virtual sockaddr* addr() = 0;
+  virtual socklen_t addrlen() = 0;
+
+  virtual uint16 port() const = 0;
+  virtual void set_port(uint16 port) = 0;
+};
+
+class IPv4Address : public Address {
+ public:
+  using Ptr = std::shared_ptr<IPv4Address>;
+
+  static Ptr Create(const char* host, uint16 port) {
+    return std::make_shared<IPv4Address>(host, port);
+  }
+
+  IPv4Address() {
+    memset(&addr_, 0, sizeof(addr_));
+    addr_.sin_family = AF_INET;
+  }
+
+  IPv4Address(const char* host, uint16 port) {
+    memset(&addr_, 0, sizeof(addr_));
+    addr_.sin_family = AF_INET;
+    addr_.sin_port = hton16(port);
+    int res = inet_pton(AF_INET, host, &addr_.sin_addr);
+    if (res <=0 ) {
+      LOG(ERROR) << "ip transform error";
+    }
+  }
+
+  IPv4Address(const sockaddr_in& addr)
+      : addr_(addr) {}
+
+  uint16 port() const override {
+    return ntoh16(addr_.sin_port);
+  }
+  void set_port(uint16 port) override {
+    addr_.sin_port = hton16(port);
+  }
+
+  sockaddr* addr() override {
+    return reinterpret_cast<sockaddr*>(&addr_);
+  }
+
+  socklen_t addrlen() override { return sizeof(addr_); }
+
+ private:
+  sockaddr_in addr_;
+};
+
+
+class IPv6Address : public Address {
+ public:
+  using Ptr = std::shared_ptr<IPv6Address>;
+
+  static Ptr Create(const char* host, uint16 port) {
+    return std::make_shared<IPv6Address>(host, port);
+  }
+
+  IPv6Address() {
+    memset(&addr_, 0, sizeof(addr_));
+    addr_.sin6_family = AF_INET6;
+  }
+
+  IPv6Address(const char* host, uint16 port) {
+    memset(&addr_, 0, sizeof(addr_));
+    addr_.sin6_family = AF_INET6;
+    addr_.sin6_port = hton16(port);
+    int res = inet_pton(AF_INET6, host, &addr_.sin6_addr);
+    if (res <=0 ) {
+      LOG(ERROR) << "ip transform error";
+    }
+  }
+
+  IPv6Address(const sockaddr_in6& addr)
+      : addr_(addr) {}
+
+  uint16 port() const override {
+    return ntoh16(addr_.sin6_port);
+  }
+  void set_port(uint16 port) override {
+    addr_.sin6_port = hton16(port);
+  }
+
+  sockaddr* addr() override {
+    return reinterpret_cast<sockaddr*>(&addr_);
+  }
+
+  socklen_t addrlen() override { return sizeof(addr_); }
+
+ private:
+  sockaddr_in6 addr_;
+};
+
+
+}  // namespace co
+
+}  // namespace tit
+
+
+
+#endif  // TIT_COROUTINE_ADDRESS_H
