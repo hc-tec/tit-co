@@ -128,7 +128,7 @@ class TcpClientSocket : public Socket {
     return std::make_shared<TcpClientSocket>(family, type, protocol, false);
   }
 
-  bool connect(const Address::Ptr& address, uint64_t timeout_ms = -1);
+  bool Connect(const Address::Ptr& address, uint64_t timeout_ms = -1);
 
 };
 

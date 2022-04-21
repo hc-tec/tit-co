@@ -51,7 +51,7 @@ TcpClientSocket::Ptr TcpServerSocket::Accept() {
   return sock;
 }
 
-bool TcpClientSocket::connect(const Address::Ptr& address,
+bool TcpClientSocket::Connect(const Address::Ptr& address,
                               uint64_t ms) {
   CHECK(is_valid());
   if(co::connect(fd(), address->addr(), address->addrlen(), ms)) {
