@@ -21,15 +21,18 @@ void SockCtx::AddEvWrite(uint32 sched_id, uint32 co_id) {
 }
 
 void SockCtx::DelEvRead() {
-  read_clear_ = 0;
+  read_ev_.sched_id_ = -1;
+  read_ev_.co_id_ = -1;
 }
 
 void SockCtx::DelEvWrite() {
-  write_clear_ = 0;
+  write_ev_.sched_id_ = -1;
+  write_ev_.co_id_ = -1;
 }
 
 void SockCtx::DelEvent() {
-  memset(this, 0, sizeof(*this));
+  DelEvRead();
+  DelEvWrite();
 }
 
 bool SockCtx::has_event() const {
@@ -37,33 +40,33 @@ bool SockCtx::has_event() const {
 }
 
 bool SockCtx::has_ev_read() const {
-  return read_ev_.co_id_ != 0;
+  return read_ev_.co_id_ != -1;
 }
 
 bool SockCtx::has_ev_read(uint32 sched_id) const {
   return sched_id == read_ev_.sched_id_ &&
-        read_ev_.co_id_ != 0;
+        read_ev_.co_id_ != -1;
 }
 
 bool SockCtx::has_ev_write() const {
-  return write_ev_.co_id_ != 0;
+  return write_ev_.co_id_ != -1;
 }
 
 bool SockCtx::has_ev_write(uint32 sched_id) const {
   return sched_id == write_ev_.sched_id_ &&
-        write_ev_.co_id_ != 0;
+        write_ev_.co_id_ != -1;
 }
 
 uint32 SockCtx::get_read_co_id(uint32 sched_id) const {
-  return sched_id == read_ev_.sched_id_ ? read_ev_.co_id_ : 0;
+  return sched_id == read_ev_.sched_id_ ? read_ev_.co_id_ : -1;
 }
 
 uint32 SockCtx::get_write_co_id(uint32 sched_id) const {
-  return sched_id == write_ev_.sched_id_ ? write_ev_.co_id_ : 0;
+  return sched_id == write_ev_.sched_id_ ? write_ev_.co_id_ : -1;
 }
 
 SockCtx& get_sock_ctx(int fd) {
-   SockCtxMap map = SockCtxSingleton::instance();
+   static SockCtxMap map = SockCtxSingleton::instance();
    return map[fd];
 }
 

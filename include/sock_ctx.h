@@ -16,7 +16,9 @@ namespace co {
 
 class SockCtx {
  public:
-  SockCtx() = default;
+  SockCtx() {
+      DelEvent();
+  };
   // The minimum unit of io schedule is coroutine.
   // A socket can be keep in two different coroutines,
   // one is reading the socket, meanwhile,

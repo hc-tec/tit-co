@@ -171,7 +171,7 @@ void SchedulerImpl::Loop() {
       }
       continue;
     }
-
+    uint32 read_co = 0, write_co = 0;
     for (int i = 0; i < events; ++i) {
       epoll_event& ev = (*epoll_)[i];
       // if fd is wake up fd, mostly not
@@ -181,15 +181,16 @@ void SchedulerImpl::Loop() {
       }
       int fd = epoll_->user_data(ev);
       auto& ctx = get_sock_ctx(fd);
-      uint32 read_co = 0, write_co = 0;
-      if ((ev.events | EPOLLIN) && !(ev.events | EPOLLOUT)) {
+      read_co = 0, write_co = 0;
+      LOG(DEBUG) << "read co, fd: " << fd << "event: " << ev.events;
+      if ((ev.events | EPOLLIN)) {
         read_co = ctx.get_read_co_id(id_);
       }
-      if (!(ev.events | EPOLLIN) && (ev.events | EPOLLOUT)) {
+      if ((ev.events | EPOLLOUT)) {
         write_co = ctx.get_write_co_id(id_);
       }
-      if (read_co) Resume(co_pool_[read_co]);
-      if (write_co) Resume(co_pool_[write_co]);
+      if (read_co != -1) Resume(co_pool_[read_co]);
+      if (write_co != -1) Resume(co_pool_[write_co]);
     }
 
     do {
