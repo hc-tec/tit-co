@@ -32,7 +32,7 @@ class ConnectionInterface {
 
 class ConnFactory {
  public:
-  virtual ConnectionInterface::Ptr Create(int fd) = 0;
+  virtual ConnectionInterface::Ptr Create(int fd) {}
 };
 
 }  // namespace co
