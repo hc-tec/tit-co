@@ -57,7 +57,7 @@ class Socket {
     }
   }
 
-  void NewSocket() {
+  void CreateSocket() {
     fd_ = socket(family_, type_, protocol_);
     Init(fd_);
   }
