@@ -26,7 +26,7 @@ void set_cloexec(int fd) {
 
 #ifdef SOCK_NONBLOCK
 int socket(int domain, int type, int protocol) {
-  return (socket)(domain, type | SOCK_NONBLOCK | SOCK_CLOEXEC, protocol);
+  return ::socket(domain, type | SOCK_NONBLOCK | SOCK_CLOEXEC, protocol);
 }
 
 #else

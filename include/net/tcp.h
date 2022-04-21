@@ -6,6 +6,7 @@
 #define TIT_COROUTINE_TCP_H
 
 #include "sock.h"
+#include "address.h"
 #include "interfaces/connection.h"
 #include "interfaces/server.h"
 
@@ -54,6 +55,7 @@ class TcpConn : public ConnectionInterface {
 
 class TcpConnFactory : public ConnFactory {
  public:
+  using type = TcpConn::Ptr;
   TcpConn::Ptr Create(int fd) override {
     return std::make_shared<TcpConn>(fd);
   }
