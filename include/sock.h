@@ -415,7 +415,7 @@ inline std::string to_string(const struct sockaddr_in* addr) {
     std::string r;
     r.append(s, n);
     r.append(":");
-    r.append(reinterpret_cast<const char*>(ntoh16(addr->sin_port)));
+    r.append(std::to_string(ntoh16(addr->sin_port)));
     return r;
 }
 

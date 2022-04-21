@@ -76,7 +76,7 @@ class IPv4Address : public Address {
   }
 
   sockaddr* addr() override {
-    return reinterpret_cast<sockaddr*>(&addr_);
+    return (sockaddr*)(&addr_);
   }
 
   socklen_t addrlen() override { return sizeof(addr_); }

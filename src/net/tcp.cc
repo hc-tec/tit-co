@@ -26,7 +26,7 @@ void TcpServer::Loop() {
   LOG(DEBUG) << "enter start loop";
   while (!stop_) {
     TcpSocket::Ptr client_sock = sock_.Accept();
-    LOG(DEBUG) << "Accept: " << sock_.remote_addr()->ToString();
+    LOG(DEBUG) << "Accept: " << sock_.local_addr()->ToString();
 
   }
 }
