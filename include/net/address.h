@@ -5,8 +5,23 @@
 #ifndef TIT_COROUTINE_ADDRESS_H
 #define TIT_COROUTINE_ADDRESS_H
 
+#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <string>
+#include <cstring>
+#include <sys/types.h>
+#include <sys/socket.h>  // basic socket api, struct linger
+#include <netinet/in.h>  // for struct sockaddr_in
+#include <netinet/tcp.h> // for TCP_NODELAY...
+#include <arpa/inet.h>   // for inet_ntop...
+#include <netdb.h>       // getaddrinfo, gethostby...
+
 #include <memory>
 
+#include "def.h"
+#include "byte_order.h"
+#include "sock.h"
 #include "log/logging.h"
 
 namespace tit {
@@ -17,21 +32,22 @@ class Address {
  public:
   using Ptr = std::shared_ptr<Address>;
 
-//  static Ptr Create(const char* host, uint16 port);
+//  static Ptr Create(const char* ip, uint16 port);
 
   virtual sockaddr* addr() = 0;
   virtual socklen_t addrlen() = 0;
 
   virtual uint16 port() const = 0;
   virtual void set_port(uint16 port) = 0;
+  virtual std::string ToString() = 0;
 };
 
 class IPv4Address : public Address {
  public:
   using Ptr = std::shared_ptr<IPv4Address>;
 
-  static Ptr Create(const char* host, uint16 port) {
-    return std::make_shared<IPv4Address>(host, port);
+  static Ptr Create(const char* ip, uint16 port) {
+    return std::make_shared<IPv4Address>(ip, port);
   }
 
   IPv4Address() {
@@ -39,11 +55,11 @@ class IPv4Address : public Address {
     addr_.sin_family = AF_INET;
   }
 
-  IPv4Address(const char* host, uint16 port) {
+  IPv4Address(const char* ip, uint16 port) {
     memset(&addr_, 0, sizeof(addr_));
     addr_.sin_family = AF_INET;
     addr_.sin_port = hton16(port);
-    int res = inet_pton(AF_INET, host, &addr_.sin_addr);
+    int res = inet_pton(AF_INET, ip, &addr_.sin_addr);
     if (res <=0 ) {
       LOG(ERROR) << "ip transform error";
     }
@@ -65,6 +81,10 @@ class IPv4Address : public Address {
 
   socklen_t addrlen() override { return sizeof(addr_); }
 
+  std::string ToString() override {
+    return to_string(&addr_);
+  }
+
  private:
   sockaddr_in addr_;
 };
@@ -74,8 +94,8 @@ class IPv6Address : public Address {
  public:
   using Ptr = std::shared_ptr<IPv6Address>;
 
-  static Ptr Create(const char* host, uint16 port) {
-    return std::make_shared<IPv6Address>(host, port);
+  static Ptr Create(const char* ip, uint16 port) {
+    return std::make_shared<IPv6Address>(ip, port);
   }
 
   IPv6Address() {
@@ -83,11 +103,11 @@ class IPv6Address : public Address {
     addr_.sin6_family = AF_INET6;
   }
 
-  IPv6Address(const char* host, uint16 port) {
+  IPv6Address(const char* ip, uint16 port) {
     memset(&addr_, 0, sizeof(addr_));
     addr_.sin6_family = AF_INET6;
     addr_.sin6_port = hton16(port);
-    int res = inet_pton(AF_INET6, host, &addr_.sin6_addr);
+    int res = inet_pton(AF_INET6, ip, &addr_.sin6_addr);
     if (res <=0 ) {
       LOG(ERROR) << "ip transform error";
     }
@@ -108,6 +128,10 @@ class IPv6Address : public Address {
   }
 
   socklen_t addrlen() override { return sizeof(addr_); }
+
+  std::string ToString() override {
+    return "ip v6 ...";
+  }
 
  private:
   sockaddr_in6 addr_;
