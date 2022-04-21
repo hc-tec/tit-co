@@ -60,11 +60,18 @@ class TcpConnFactory : public ConnFactory {
 };
 
 class TcpServer : public ServerInterface {
+ public:
+
+  ~TcpServer() override;
+  void Start() override;
+  void Exit() override;
+
  private:
   const char* ip_;
   uint16 port_;
 
   int fd_;
+  ConnFactory conn_factory_;
 };
 
 
