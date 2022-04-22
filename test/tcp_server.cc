@@ -27,14 +27,6 @@ class ServerHandler : public co::TcpServer::Delegate {
   void OnNewConn(const co::TcpSocket::Ptr &new_sock) override {
     LOG(INFO) << "New Connection";
   }
-  void OnMessage(const co::TcpSocket::Ptr &new_sock, const char *buffer,
-                 uint len) override {
-
-  }
-  void OnSendFinish(const co::TcpSocket::Ptr &new_sock, const char *buffer,
-                    uint len) override {
-
-  }
 };
 
 int main () {

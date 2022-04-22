@@ -22,8 +22,6 @@ class TcpServer : public ServerInterface {
     virtual void OnBind(const TcpSocket::Ptr& server_sock) = 0;
     virtual void OnListen(const TcpSocket::Ptr& server_sock) = 0;
     virtual void OnNewConn(const TcpSocket::Ptr& new_sock) = 0;
-    virtual void OnMessage(const TcpSocket::Ptr& new_sock, const char* buffer, uint len) = 0;
-    virtual void OnSendFinish(const TcpSocket::Ptr& new_sock, const char* buffer, uint len) = 0;
   };
 
   explicit TcpServer(const Address::Ptr& addr)
