@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+message TestForProto {
+  optional string name = 1;
+  optional string password = 2;
+  repeated int32 id = 3;
+}

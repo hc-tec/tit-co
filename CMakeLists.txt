@@ -13,12 +13,25 @@ endif()
 
 add_compile_options(-Wall -O2 -g -Wno-sign-compare -Wno-class-memaccess -Wno-strict-aliasing)
 
+
+include(FindProtobuf)
+find_package(Protobuf REQUIRED)
+
+if (Protobuf_FOUND)  # 需要特别注意Protobuf_FOUND的大小写
+    INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIR})
+else (Protobuf_FOUND)
+    MESSAGE(FATAL_ERROR "PROTOBUF NOT FOUNED")
+endif (Protobuf_FOUND)
+link_directories(${PROTOBUF_LIBRARIES})
+
 include_directories(src)
+
 
 add_subdirectory(src)
 add_subdirectory(test)
 
 link_directories(third_party)
+
 #include_directories(include/base)
 #include_directories(include/log)
 

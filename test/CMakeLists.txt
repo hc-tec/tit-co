@@ -17,3 +17,5 @@ foreach(TEST_FILE ${ALL_TEST_FILES})
 
     add_test(NAME ${TEST_TARGET}_test COMMAND ${TEST_TARGET}_test)
 endforeach(TEST_FILE ${ALL_TEST_FILES})
+
+add_subdirectory(rpc)
