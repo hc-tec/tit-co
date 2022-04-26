@@ -16,8 +16,7 @@ add_compile_options(-Wall -O2 -g -Wno-sign-compare -Wno-class-memaccess -Wno-str
 
 include(FindProtobuf)
 find_package(Protobuf REQUIRED)
-
-if (Protobuf_FOUND)  # 需要特别注意Protobuf_FOUND的大小写
+if (Protobuf_FOUND)
     INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIR})
 else (Protobuf_FOUND)
     MESSAGE(FATAL_ERROR "PROTOBUF NOT FOUNED")

@@ -5,19 +5,19 @@
 #include <string>
 #include <iostream>
 
-#include "test.pb.h"
+#include "rpc/protocol.h"
+#include "rpc/serializer.h"
+
+using namespace tit::co;
 
 int main() {
-  TestForProto proto;
-  proto.add_id(1);
-  proto.set_name("titto");
-  proto.set_password("123456");
 
-  std::string str = proto.SerializeAsString();
-  std::cout << str << std::endl;
+  Protocol::Ptr protocol = Protocol::Create(MsgType::kRequestCall, 123, "wohuqifei");
 
-  TestForProto proto2;
+  std::string binary_data = BaseProtocolSerializer::Serialize(protocol);
 
-  proto2.ParseFromString(str);
-  std::cout << proto2.name() << ' ' << proto2.password();
+  std::cout << binary_data << std::endl;
+
+  Protocol::Ptr parsed_protocol = BaseProtocolSerializer::Deserialize(binary_data);
+  std::cout << parsed_protocol->version() << std::endl;
 }

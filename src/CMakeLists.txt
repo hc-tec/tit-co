@@ -1,6 +1,9 @@
 
 file(GLOB_RECURSE CO_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
 
+file(GLOB_RECURSE CO_HEADER_FILES ${PROJECT_SOURCE_DIR}/include/*.h ${PROJECT_SOURCE_DIR}/include/*.cc)
+
+
 if(MSVC)
     if(CMAKE_SIZEOF_VOID_P EQUAL 4)
         set(ASM_FILES context/context_x86.asm)
@@ -13,7 +16,7 @@ else()
 endif()
 
 list(APPEND CO_SRC_FILES ${ASM_FILES})
-
+list(APPEND CO_SRC_FILES ${CO_HEADER_FILES})
 add_library(co ${CO_SRC_FILES})
 #add_library(cocoyaxi::co ALIAS co)
 
@@ -35,5 +38,5 @@ install(
 #        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/include
 #)
 
-#file(GLOB HEADERS "${PROJECT_SOURCE_DIR}/include/*.h")
+#file(GLOB HEADERS "${PROJECT_SOURCE_DIR}/include/**.h")
 #install(FILES ${HEADERS} DESTINATION co)
