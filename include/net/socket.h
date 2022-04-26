@@ -52,6 +52,7 @@ class Socket {
       fd_ = fd;
       set_reuseaddr(fd_);
       conn_ = conn_factory_.Create(fd_);
+      connected_ = true;
       InitLocalAddr();
       InitRemoteAddr();
     }
@@ -69,7 +70,7 @@ class Socket {
 
   virtual int Recvn(void* buf, int n, int ms) {
     CHECK(connected_);
-   return conn_->Recvn(buf, n, ms);
+    return conn_->Recvn(buf, n, ms);
   }
 
   virtual int Send(const void* buf, int n, int ms) {
@@ -77,7 +78,7 @@ class Socket {
     return conn_->Send(buf, n, ms);
   }
 
-  virtual bool Close(int ms) {
+  virtual bool Close(int ms = -1) {
     if (!connected_) return true;
     connected_ = false;
     return conn_->Close(ms) == 0;

@@ -5,6 +5,7 @@
 #ifndef TIT_COROUTINE_TCP_H
 #define TIT_COROUTINE_TCP_H
 
+#include <memory>
 #include <utility>
 
 #include "conn.h"
@@ -16,6 +17,7 @@ namespace co {
 
 class TcpServer : public ServerInterface {
  public:
+  using Ptr = std::shared_ptr<TcpServer>;
 
   class Delegate {
    public:
@@ -43,6 +45,14 @@ class TcpServer : public ServerInterface {
   ~TcpServer() {
 
   };
+
+  static Ptr Create(const Address::Ptr& addr) {
+    return std::make_shared<TcpServer>(addr);
+  }
+
+  static Ptr Create(const char* ip, uint16 port) {
+    return std::make_shared<TcpServer>(ip, port);
+  }
 
   void Start() override;
   void Exit() override;
