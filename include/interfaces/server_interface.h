@@ -2,8 +2,8 @@
 // Created by titto on 2022/4/21.
 //
 
-#ifndef TIT_COROUTINE_SERVER_H
-#define TIT_COROUTINE_SERVER_H
+#ifndef TIT_COROUTINE_SERVER_INTERFACE_H
+#define TIT_COROUTINE_SERVER_INTERFACE_H
 
 namespace tit {
 
@@ -12,7 +12,6 @@ namespace co {
 class ServerInterface {
  public:
   ServerInterface() = default;
-  virtual ~ServerInterface() = 0;
 
   virtual void Start() = 0;
 
@@ -23,4 +22,4 @@ class ServerInterface {
 
 }  // namespace tit
 
-#endif  // TIT_COROUTINE_SERVER_H
+#endif  // TIT_COROUTINE_SERVER_INTERFACE_H

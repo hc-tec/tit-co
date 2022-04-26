@@ -2,8 +2,8 @@
 // Created by titto on 2022/4/21.
 //
 
-#ifndef TIT_COROUTINE_CONNECTION_H
-#define TIT_COROUTINE_CONNECTION_H
+#ifndef TIT_COROUTINE_CONNECTION_INTERFACE_H
+#define TIT_COROUTINE_CONNECTION_INTERFACE_H
 
 #include <memory>
 
@@ -32,6 +32,7 @@ class ConnectionInterface {
 
 class ConnFactory {
  public:
+  using type = ConnectionInterface::Ptr;
   virtual ConnectionInterface::Ptr Create(int fd) {}
 };
 
@@ -39,4 +40,4 @@ class ConnFactory {
 
 }  // namespace tit
 
-#endif  // TIT_COROUTINE_CONNECTION_H
+#endif  // TIT_COROUTINE_CONNECTION_INTERFACE_H

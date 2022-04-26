@@ -5,11 +5,14 @@
 #ifndef TIT_COROUTINE_PROTOCOL_H
 #define TIT_COROUTINE_PROTOCOL_H
 
+
 #include <memory>
 #include <sstream>
 #include <utility>
 
 #include "def.h"
+#include "interfaces/protocol_interface.h"
+#include "interfaces/serializer_interface.h"
 
 namespace tit {
 
@@ -46,7 +49,7 @@ enum MsgType : uint8 {
  * 第四个字节开始是一个32位序列号。
  * 第七个字节开始的四字节表示消息长度，即后面要接收的内容长度。
  */
-class Protocol {
+class Protocol : public ProtocolInterface {
  public:
   using Ptr = std::shared_ptr<Protocol>;
 
@@ -107,6 +110,29 @@ class Protocol {
   std::string data_;
 };
 
+
+class BaseProtocolHandler : public SerializerHandler<Protocol> {
+ public:
+  std::string Serialize(const Protocol::Ptr& protocol) override;
+  Protocol::Ptr Deserialize(const std::string& stream) override;
+};
+
+template <>
+class Serializer<Protocol, BaseProtocolHandler> {
+ public:
+  static std::string Serialize(const Protocol::Ptr& protocol) {
+    BaseProtocolHandler handle;
+    return handle.Serialize(protocol);
+  }
+
+  static Protocol::Ptr Deserialize(const std::string& stream) {
+    BaseProtocolHandler handle;
+    return handle.Deserialize(stream);
+  }
+
+};
+
+using BaseProtocolSerializer = Serializer<Protocol, BaseProtocolHandler>;
 
 }  // namespace co
 

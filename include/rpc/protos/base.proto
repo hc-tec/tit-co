@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+message BaseProtocolBuf {
+  uint32 magic = 1;
+  uint32 version = 2;
+  uint32 type = 3;
+  uint32 req_id = 4;
+  uint32 data_len = 5;
+  bytes data = 6;
+}
