@@ -5,10 +5,10 @@
 #ifndef TIT_COROUTINE_CONN_H
 #define TIT_COROUTINE_CONN_H
 
-#include "sock.h"
 #include "address.h"
-#include "interfaces/connection.h"
-#include "interfaces/server.h"
+#include "interfaces/connection_interface.h"
+#include "interfaces/server_interface.h"
+#include "sock.h"
 
 namespace tit {
 
