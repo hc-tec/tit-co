@@ -11,8 +11,9 @@ namespace co {
 
 Copoll::Copoll()
     : id_(0),
-      idle_co_ids_(kPoolSize),
-      pool_(kPoolSize) {}
+      pool_(kPoolSize) {
+  idle_co_ids_.reserve(kPoolSize);
+}
 
 Coroutine* Copoll::Pop() {
   // if there is no more coroutine
