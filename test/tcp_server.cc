@@ -2,23 +2,22 @@
 // Created by titto on 2022/4/21.
 //
 
-#include "scheduler.h"
-
 #include <iostream>
 
 #include "channel.h"
-#include "interfaces/connection.h"
+#include "interfaces/connection_interface.h"
 #include "log/logging.h"
-#include "net/tcp.h"
-#include "sock.h"
 #include "net/address.h"
 #include "net/socket.h"
+#include "net/tcp.h"
+#include "scheduler.h"
+#include "sock.h"
 
 using namespace tit;
 
 class ServerHandler : public co::TcpServer::Delegate {
  public:
-  void OnBind(const co::TcpSocket::Ptr &server_sock) override {
+  void OnBind(const co::TcpSocket::Ptr &server_sock, const co::Address::Ptr& addr) override {
     LOG(INFO) << "Bind";
   }
   void OnListen(const co::TcpSocket::Ptr &server_sock) override {

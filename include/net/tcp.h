@@ -19,7 +19,7 @@ class TcpServer : public ServerInterface {
 
   class Delegate {
    public:
-    virtual void OnBind(const TcpSocket::Ptr& server_sock) = 0;
+    virtual void OnBind(const TcpSocket::Ptr& server_sock, const Address::Ptr& addr) = 0;
     virtual void OnListen(const TcpSocket::Ptr& server_sock) = 0;
     virtual void OnNewConn(const TcpSocket::Ptr& new_sock) = 0;
   };
@@ -55,7 +55,7 @@ class TcpServer : public ServerInterface {
 
   void InitSock() {
     sock_->Bind(addr_);
-    if (delegate_) delegate_->OnBind(sock_);
+    if (delegate_) delegate_->OnBind(sock_, addr_);
     sock_->Listen();
     if (delegate_) delegate_->OnListen(sock_);
   }
