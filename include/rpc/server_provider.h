@@ -16,12 +16,16 @@ namespace tit {
 
 namespace co {
 
-class ServerProvider : public TcpServer::Delegate {
+class RpcServerProvider : public TcpServer::Delegate {
  public:
-  using Ptr = std::shared_ptr<ServerProvider>;
+  using Ptr = std::shared_ptr<RpcServerProvider>;
   using Func = std::function<void()>;
 
-  explicit ServerProvider(const Address::Ptr& addr)
+  static Ptr Create(const Address::Ptr& addr) {
+    return std::make_shared<RpcServerProvider>(addr);
+  }
+
+  explicit RpcServerProvider(const Address::Ptr& addr)
       : server_(addr) {
     server_.set_delegate(this);
   }
@@ -39,6 +43,9 @@ class ServerProvider : public TcpServer::Delegate {
   void OnBind(const TcpSocket::Ptr& server_sock, const Address::Ptr& addr) override {}
   void OnListen(const TcpSocket::Ptr& server_sock) override {}
   void OnNewConn(const TcpSocket::Ptr& new_sock) override;
+ private:
+
+//  void HandleClient()
 
  private:
   TcpServer server_;

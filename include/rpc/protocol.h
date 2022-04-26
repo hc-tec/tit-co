@@ -18,7 +18,7 @@ namespace tit {
 
 namespace co {
 
-enum MsgType : uint8 {
+enum MsgType : uint32 {
   kHeartBeat,           // 心跳包
   kProvider,            // 向服务中心声明为provider
   kConsumer,            // 向服务中心声明为consumer
@@ -53,9 +53,9 @@ class Protocol : public ProtocolInterface {
  public:
   using Ptr = std::shared_ptr<Protocol>;
 
-  static constexpr uint8 kMagic = 0xaa;
-  static constexpr uint8 kVersion = 0x01;
-  static constexpr uint8 kBasicLen = 11;
+  static constexpr uint32 kMagic = 0xaa;
+  static constexpr uint32 kVersion = 0x01;
+  static constexpr uint32 kBasicLen = 20;
 
   Protocol(MsgType type, uint32 req_id, std::string  data)
       : type_(type),
@@ -73,15 +73,15 @@ class Protocol : public ProtocolInterface {
     return heart_beat;
   }
 
-  uint8 magic() const { return magic_; }
-  uint8 version() const { return version_; }
+  uint32 magic() const { return magic_; }
+  uint32 version() const { return version_; }
   MsgType msg_type() const { return type_; }
   uint32_t req_id() const { return req_id_; }
   uint32_t data_len() const { return data_len_; }
   const std::string& data() const { return data_; }
 
-  void set_magic(uint8 magic) { magic_ = magic; }
-  void set_version(uint8 version) { version_ = version; }
+  void set_magic(uint32 magic) { magic_ = magic; }
+  void set_version(uint32 version) { version_ = version; }
   void set_msg_type(MsgType type) { type_ = type; }
   void set_req_id(uint32_t id) { req_id_ = id; }
   void set_data_len(uint32_t len) { data_len_ = len; }
@@ -102,8 +102,8 @@ class Protocol : public ProtocolInterface {
 
  private:
 
-  uint8 magic_ { kMagic };
-  uint8 version_ { kVersion };
+  uint32 magic_ { kMagic };
+  uint32 version_ { kVersion };
   MsgType type_;
   uint32 req_id_;
   uint32 data_len_ { kBasicLen };

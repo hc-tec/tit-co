@@ -12,6 +12,7 @@
 #include "def.h"
 #include "epoll.h"
 #include "io_event.h"
+#include "os.h"
 #include "task_manager.h"
 #include "timer_manager.h"
 #include "base/platform_thread.h"

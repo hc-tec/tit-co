@@ -141,8 +141,10 @@ void SchedulerImpl::SaveStack(Coroutine* co) {
 }
 
 void SchedulerImpl::Recycle() {
-  stacks_[running_co_->stack_id_].co = nullptr;
-  co_pool_.Push(running_co_);
+  if (running_co_ != main_co_) {
+    stacks_[running_co_->stack_id_].co = nullptr;
+    co_pool_.Push(running_co_);
+  }
 }
 
 void SchedulerImpl::MainFunc(tb_context_from_t from) {
