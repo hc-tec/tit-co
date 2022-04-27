@@ -14,7 +14,7 @@ namespace tit {
 
 namespace co {
 
-template <class Protocol>
+template <typename Protocol>
 class SerializerHandler {
  public:
   std::string Serialize(const typename Protocol::Ptr& protocol) {
@@ -28,13 +28,13 @@ class SerializerHandler {
   }
 };
 
-template <class Protocol>
+template <typename Protocol>
 struct serializer_handler_traits {
   using default_handler = SerializerHandler<Protocol>;
 };
 
 
-template <class Protocol, class SerializerHandler =
+template <typename Protocol, typename SerializerHandler =
     typename serializer_handler_traits<Protocol>::default_handler>
 class Serializer {
  public:
