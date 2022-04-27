@@ -5,6 +5,7 @@
 #ifndef TIT_COROUTINE_PROTOCOL_H
 #define TIT_COROUTINE_PROTOCOL_H
 
+#include <rpc/protos/gen/base.pb.h>
 
 #include <memory>
 #include <sstream>
@@ -90,13 +91,13 @@ class Protocol : public ProtocolInterface {
 
   std::string toString() {
     std::stringstream ss;
-    ss << "[ magic=" << magic_
+    ss << "|magic=" << magic_
        << " version=" << version_
        << " type=" << type_
        << " id=" << req_id_
        << " length=" << data_len_
        << " content=" << data_
-       << " ]";
+       << "|";
     return ss.str();
   }
 
@@ -110,29 +111,54 @@ class Protocol : public ProtocolInterface {
   std::string data_;
 };
 
-
-class BaseProtocolHandler : public SerializerHandler<Protocol> {
+template<>
+class SerializerHandler<Protocol> {
  public:
-  std::string Serialize(const Protocol::Ptr& protocol) override;
-  Protocol::Ptr Deserialize(const std::string& stream) override;
+  std::string Serialize(const Protocol::Ptr& protocol) {
+    BaseProtocolBuf buf;
+    buf.set_magic(protocol->magic());
+    buf.set_version(protocol->version());
+    buf.set_type(protocol->msg_type());
+    buf.set_data_len(protocol->data_len());
+    buf.set_data(protocol->data());
+    return buf.SerializeAsString();
+  }
+  Protocol::Ptr Deserialize(const std::string& stream) {
+    BaseProtocolBuf buf;
+    buf.ParseFromString(stream);
+    return Protocol::Create(
+        static_cast<MsgType>(buf.type()),
+        buf.req_id(),
+        buf.data()
+    );
+  }
 };
 
-template <>
-class Serializer<Protocol, BaseProtocolHandler> {
+class MySerializerHandler {
  public:
-  static std::string Serialize(const Protocol::Ptr& protocol) {
-    BaseProtocolHandler handle;
-    return handle.Serialize(protocol);
+  std::string Serialize(const Protocol::Ptr& protocol) {
+    BaseProtocolBuf buf;
+    buf.set_magic(protocol->magic());
+    buf.set_version(protocol->version());
+    buf.set_type(protocol->msg_type());
+    buf.set_data_len(protocol->data_len());
+    buf.set_data(protocol->data());
+    return buf.SerializeAsString();
   }
-
-  static Protocol::Ptr Deserialize(const std::string& stream) {
-    BaseProtocolHandler handle;
-    return handle.Deserialize(stream);
+  Protocol::Ptr Deserialize(const std::string& stream) {
+    BaseProtocolBuf buf;
+    buf.ParseFromString(stream);
+    return Protocol::Create(
+        static_cast<MsgType>(buf.type()),
+        buf.req_id(),
+        buf.data()
+    );
   }
-
 };
 
-using BaseProtocolSerializer = Serializer<Protocol, BaseProtocolHandler>;
+
+using BaseProtocolSerializer = Serializer<Protocol>;
+using MyProtocolSerializer = Serializer<Protocol, MySerializerHandler>;
 
 }  // namespace co
 
