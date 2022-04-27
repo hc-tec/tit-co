@@ -121,6 +121,7 @@ class SerializerHandler<Protocol> {
     buf.set_type(protocol->msg_type());
     buf.set_data_len(protocol->data_len());
     buf.set_data(protocol->data());
+    buf.set_req_id(protocol->req_id());
     return buf.SerializeAsString();
   }
   Protocol::Ptr Deserialize(const std::string& stream) {
