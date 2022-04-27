@@ -1,7 +1,6 @@
 //
 // Created by titto on 2022/4/26.
 //
-#include <iostream>
 #include <algorithm>
 
 #include "log/logging.h"
@@ -21,7 +20,6 @@ Protocol::Ptr RpcSession::RecvProtocol() {
     return nullptr;
   }
   int data_len = atoi(data_len_);
-  std::cout << "packet " << data_len << std::endl;
   if (data_len == 0) return nullptr;
 
   LOG(DEBUG) << "packet length: " << data_len;
