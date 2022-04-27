@@ -116,6 +116,16 @@ class Channel {
     impl_ = c.impl_;
   }
 
+  Channel<T>& operator=(const Channel& c) {
+    impl_ = c.impl_;
+    return *this;
+  }
+
+  Channel<T>& operator=(Channel&& c) {
+    impl_ = std::move(c.impl_);
+    return *this;
+  }
+
   void operator>>(T& p) const {
     impl_->Read(&p);
   }

@@ -31,6 +31,7 @@ WaitCtx::Ptr ChannelImpl::CreateWaitCtxInfo(Coroutine *co, void *buf) {
         malloc(sizeof(WaitCtx)));
     wait_ctx->buf_ = buf;
   }
+  wait_ctx->co_ = co;
   return CreateWaitCtx(wait_ctx);
 }
 
