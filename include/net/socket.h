@@ -104,7 +104,10 @@ class Socket {
   Address::Ptr remote_addr() { return remote_addr_; }
 
   bool Bind(const Address::Ptr& addr) {
-//    CHECK(is_valid());
+    if (!is_valid()) {
+      CreateSocket();
+    }
+    CHECK(is_valid());
     if (co::bind(fd(), addr->addr(), addr->addrlen())) {
       LOG(ERROR) << "bind error";
       return false;
@@ -195,6 +198,9 @@ typename Socket<ConnFactory>::Ptr Socket<ConnFactory>::Accept() {
 template <typename ConnFactory>
 bool Socket<ConnFactory>::Connect(const Address::Ptr& address,
                               uint64_t ms) {
+  if (!is_valid()) {
+    CreateSocket();
+  }
   CHECK(is_valid());
   if(co::connect(fd(), address->addr(), address->addrlen(), ms)) {
     LOG(ERROR) << "connect error";

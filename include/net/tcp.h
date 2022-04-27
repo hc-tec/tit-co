@@ -31,7 +31,6 @@ class TcpServer : public ServerInterface {
         sock_(TcpSocket::Create(addr->family(), kTcp, 0)),
         delegate_(nullptr),
         stop_(false) {
-    sock_->CreateSocket();
   }
 
   TcpServer(const char* ip, uint16 port)
@@ -39,7 +38,6 @@ class TcpServer : public ServerInterface {
         sock_(TcpSocket::Create(addr_->family(), kTcp, 0)),
         delegate_(nullptr),
         stop_(false) {
-    sock_->CreateSocket();
   }
 
   ~TcpServer() {
