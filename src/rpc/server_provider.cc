@@ -13,8 +13,9 @@ namespace co {
 void RpcServerProvider::OnNewConn(const TcpSocket::Ptr& new_sock) {
   RpcSession::Ptr session = RpcSession::Create(new_sock);
   Protocol::Ptr protocol = session->RecvProtocol();
-  LOG(INFO) << "end";
-  new_sock->Close();
+  session->SendProtocol(protocol);
+  LOG(INFO) << protocol->toString();
+//  new_sock->Close();
 }
 
 bool RpcServerProvider::BindRegistry(const Address::Ptr& addr) { return false; }
