@@ -37,6 +37,10 @@ class Socket {
         protocol_(protocol),
         connected_(false) {}
 
+  static Ptr Create() {
+    return std::make_shared<Socket>();
+  }
+
   static Ptr Create(Family family, Type type, int protocol) {
     return std::make_shared<Socket>(family, type, protocol);
   }
