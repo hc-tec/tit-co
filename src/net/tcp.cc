@@ -27,8 +27,10 @@ void TcpServer::Loop() {
   LOG(DEBUG) << "enter start loop";
   while (!stop_) {
     TcpSocket::Ptr client_sock = sock_->Accept();
-//    delegate_->OnNewConn(client_sock)
-    if (delegate_) go(std::bind(&Delegate::OnNewConn, delegate_, client_sock));
+
+    if (delegate_) go(std::bind(&Delegate::OnNewConn,
+                                delegate_,
+                                client_sock));
 //    LOG(DEBUG) << "Accept: " << sock_->remote_addr()->ToString();
   }
 }
