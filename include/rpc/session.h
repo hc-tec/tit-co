@@ -27,7 +27,7 @@ class RpcSession {
 
   Protocol::Ptr RecvProtocol();
 
-  bool SendProtocol(const Protocol::Ptr& protocol);
+  bool SendProtocol(Protocol::Ptr protocol);
 
  private:
  TcpSocket::Ptr socket_;

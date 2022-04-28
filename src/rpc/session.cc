@@ -33,13 +33,15 @@ Protocol::Ptr RpcSession::RecvProtocol() {
 
   std::string data(buf);
   LOG(DEBUG) << "recv protocol buf data: " << buf;
-  Protocol::Ptr protocol = BaseProtocolSerializer::Deserialize(data);
+  BaseProtocolSerializer serializer;
+  Protocol::Ptr protocol = static_cast<Protocol*>(serializer.Deserialize(data));
   return protocol;
 }
 
-bool RpcSession::SendProtocol(const Protocol::Ptr& protocol) {
+bool RpcSession::SendProtocol(Protocol::Ptr protocol) {
   LOG(DEBUG) << "send protocol";
-  std::string buf = BaseProtocolSerializer::Serialize(protocol);
+  BaseProtocolSerializer serializer;
+  std::string buf = serializer.Serialize(protocol);
   int32 buf_len = buf.size();
   if (buf_len > kDataMaxLen) {
     LOG(DEBUG) << "total data length can't greaten than " << kDataMaxLen;

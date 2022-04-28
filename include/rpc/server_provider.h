@@ -11,6 +11,8 @@
 #include <string>
 
 #include "net/tcp.h"
+#include "protocol.h"
+#include "interfaces/protocol_interface.h"
 
 namespace tit {
 
@@ -19,7 +21,9 @@ namespace co {
 class RpcServerProvider : public TcpServer::Delegate {
  public:
   using Ptr = std::shared_ptr<RpcServerProvider>;
-  using Func = std::function<void()>;
+  using RpcReq = ProtocolInterface::Ptr;
+  using RpcRes = ProtocolInterface::Ptr;
+  using Func = std::function<RpcRes (const RpcReq&)>;
 
   static Ptr Create(const Address::Ptr& addr) {
     return std::make_shared<RpcServerProvider>(addr);
@@ -44,8 +48,6 @@ class RpcServerProvider : public TcpServer::Delegate {
   void OnListen(const TcpSocket::Ptr& server_sock) override {}
   void OnNewConn(const TcpSocket::Ptr& new_sock) override;
  private:
-
-//  void HandleClient()
 
  private:
   TcpServer server_;

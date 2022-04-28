@@ -6,6 +6,8 @@
 #define TIT_COROUTINE_RPC_H
 
 #include "def.h"
+#include "protocol_manager.h"
+#include "protocols/hello.h"
 
 namespace tit {
 
@@ -48,8 +50,8 @@ class Result<BaseProtocol, TargetProtocol> {
 
   Result() {}
 
-  Result(BaseProtocolPtr base_proto,
-         TargetProtocolPtr target_proto)
+  Result(const BaseProtocolPtr& base_proto,
+         const TargetProtocolPtr& target_proto)
       : base_proto_(base_proto),
         target_proto_(target_proto),
         state_(kSuccess) {}
