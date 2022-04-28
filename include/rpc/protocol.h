@@ -54,7 +54,7 @@ enum MsgType : uint32 {
  */
 class Protocol : public ProtocolInterface {
  public:
-  using Ptr = std::shared_ptr<Protocol>;
+  using Ptr = Protocol*;
 
   static constexpr uint32 kMagic = 0xaa;
   static constexpr uint32 kVersion = 0x01;
@@ -67,9 +67,13 @@ class Protocol : public ProtocolInterface {
         data_(std::move(data)) {}
 
   static Ptr Create(MsgType type, uint32 req_id, const std::string& data) {
-    Ptr proto = std::make_shared<Protocol>(type, req_id, data);
+    Ptr proto = new Protocol(type, req_id, data);
     proto->set_data_len(data.size());
     return proto;
+  }
+
+  static Ptr Create(const Protocol& protocol) {
+    return new Protocol(protocol);
   }
 
   static Ptr CreateHeartBeat() {
@@ -120,7 +124,8 @@ class Protocol : public ProtocolInterface {
 template<>
 class SerializerHandler<Protocol> {
  public:
-  std::string Serialize(const Protocol::Ptr& protocol) {
+  virtual std::string Serialize(ProtocolInterface::Ptr protocol_) {
+    Protocol::Ptr protocol = (Protocol::Ptr)protocol_;
     BaseProtocolBuf buf;
     buf.set_magic(protocol->magic());
     buf.set_version(protocol->version());
@@ -133,7 +138,7 @@ class SerializerHandler<Protocol> {
     }
     return buf.SerializeAsString();
   }
-  Protocol::Ptr Deserialize(const std::string& stream) {
+  virtual Protocol::Ptr Deserialize(const std::string& stream) {
     BaseProtocolBuf buf;
     buf.ParseFromString(stream);
     Protocol::Ptr protocol = Protocol::Create(
@@ -150,7 +155,8 @@ class SerializerHandler<Protocol> {
 
 class MySerializerHandler {
  public:
-  std::string Serialize(const Protocol::Ptr& protocol) {
+  virtual std::string Serialize(ProtocolInterface::Ptr protocol_) {
+    Protocol::Ptr protocol = (Protocol::Ptr)protocol_;
     LOG(DEBUG) << "custom serializer handler";
     BaseProtocolBuf buf;
     buf.set_magic(protocol->magic());
@@ -164,7 +170,7 @@ class MySerializerHandler {
     }
     return buf.SerializeAsString();
   }
-  Protocol::Ptr Deserialize(const std::string& stream) {
+  virtual Protocol::Ptr Deserialize(const std::string& stream) {
     BaseProtocolBuf buf;
     buf.ParseFromString(stream);
     Protocol::Ptr protocol = Protocol::Create(
