@@ -5,13 +5,15 @@
 #ifndef TIT_COROUTINE_PROTOCOL_H
 #define TIT_COROUTINE_PROTOCOL_H
 
-#include <rpc/protos/gen/base.pb.h>
+
 
 #include <memory>
 #include <sstream>
 #include <utility>
 
 #include "def.h"
+#include "traits.h"
+#include "rpc/protos/gen/base.pb.h"
 #include "interfaces/protocol_interface.h"
 #include "interfaces/serializer_interface.h"
 
@@ -61,6 +63,7 @@ class Protocol : public ProtocolInterface {
   Protocol(MsgType type, uint32 req_id, std::string  data)
       : type_(type),
         req_id_(req_id),
+        srv_name_(),
         data_(std::move(data)) {}
 
   static Ptr Create(MsgType type, uint32 req_id, const std::string& data) {
@@ -79,6 +82,7 @@ class Protocol : public ProtocolInterface {
   MsgType msg_type() const { return type_; }
   uint32_t req_id() const { return req_id_; }
   uint32_t data_len() const { return data_len_; }
+  const std::string& srv_name() const { return srv_name_; }
   const std::string& data() const { return data_; }
 
   void set_magic(uint32 magic) { magic_ = magic; }
@@ -86,6 +90,7 @@ class Protocol : public ProtocolInterface {
   void set_msg_type(MsgType type) { type_ = type; }
   void set_req_id(uint32_t id) { req_id_ = id; }
   void set_data_len(uint32_t len) { data_len_ = len; }
+  void set_srv_name(const std::string& srv_name) { srv_name_ = srv_name; }
   void set_data(const std::string& content) { data_ = content; }
 
 
@@ -108,6 +113,7 @@ class Protocol : public ProtocolInterface {
   MsgType type_;
   uint32 req_id_;
   uint32 data_len_ { kBasicLen };
+  std::string srv_name_;
   std::string data_;
 };
 
@@ -122,44 +128,66 @@ class SerializerHandler<Protocol> {
     buf.set_data_len(protocol->data_len());
     buf.set_data(protocol->data());
     buf.set_req_id(protocol->req_id());
+    if (!protocol->srv_name().empty()) {
+      buf.set_srv_name(protocol->srv_name());
+    }
     return buf.SerializeAsString();
   }
   Protocol::Ptr Deserialize(const std::string& stream) {
     BaseProtocolBuf buf;
     buf.ParseFromString(stream);
-    return Protocol::Create(
+    Protocol::Ptr protocol = Protocol::Create(
         static_cast<MsgType>(buf.type()),
         buf.req_id(),
         buf.data()
     );
+    if (buf.has_srv_name()) {
+      protocol->set_srv_name(buf.srv_name());
+    }
+    return protocol;
   }
 };
 
 class MySerializerHandler {
  public:
   std::string Serialize(const Protocol::Ptr& protocol) {
+    LOG(DEBUG) << "custom serializer handler";
     BaseProtocolBuf buf;
     buf.set_magic(protocol->magic());
     buf.set_version(protocol->version());
     buf.set_type(protocol->msg_type());
     buf.set_data_len(protocol->data_len());
     buf.set_data(protocol->data());
+    buf.set_req_id(protocol->req_id());
+    if (!protocol->srv_name().empty()) {
+      buf.set_srv_name(protocol->srv_name());
+    }
     return buf.SerializeAsString();
   }
   Protocol::Ptr Deserialize(const std::string& stream) {
     BaseProtocolBuf buf;
     buf.ParseFromString(stream);
-    return Protocol::Create(
+    Protocol::Ptr protocol = Protocol::Create(
         static_cast<MsgType>(buf.type()),
         buf.req_id(),
         buf.data()
     );
+    if (buf.has_srv_name()) {
+      protocol->set_srv_name(buf.srv_name());
+    }
+    return protocol;
   }
 };
 
 
 using BaseProtocolSerializer = Serializer<Protocol>;
 using MyProtocolSerializer = Serializer<Protocol, MySerializerHandler>;
+
+template <char const* V, typename T = Str2Type<V>>
+struct SvrName2Protocol {
+  using REQ = Protocol;
+  using RES = Protocol;
+};
 
 }  // namespace co
 

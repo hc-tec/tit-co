@@ -5,11 +5,16 @@
 #ifndef TIT_COROUTINE_PROTOCOL_INTERFACE_H
 #define TIT_COROUTINE_PROTOCOL_INTERFACE_H
 
+#include <memory>
+
 namespace tit {
 
 namespace co {
 
-class ProtocolInterface {};
+class ProtocolInterface {
+ public:
+  using Ptr = ProtocolInterface*;
+};
 
 }  // namespace co
 

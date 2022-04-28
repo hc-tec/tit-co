@@ -14,15 +14,21 @@ namespace tit {
 
 namespace co {
 
-template <typename Protocol>
-class SerializerHandler {
+class SerializerInterface {
  public:
-  std::string Serialize(const typename Protocol::Ptr& protocol) {
+  virtual std::string Serialize(ProtocolInterface::Ptr protocol) { return nullptr; }
+  virtual ProtocolInterface::Ptr Deserialize(const std::string& stream) { return nullptr; }
+};
+
+template <typename Protocol>
+class SerializerHandler : public SerializerInterface {
+ public:
+  virtual std::string Serialize(typename Protocol::Ptr protocol) {
     LOG(ERROR) << "must implement Serialize method for the serializer handler of protocol<" << typeid(protocol).name() << ">";
     return nullptr;
   }
 
-  typename Protocol::Ptr Deserialize(const std::string& stream) {
+  virtual typename Protocol::Ptr Deserialize(const std::string& stream) {
     LOG(ERROR) << "must implement Deserialize method for the serializer handler of protocol";
     return nullptr;
   }
@@ -36,14 +42,14 @@ struct serializer_handler_traits {
 
 template <typename Protocol, typename SerializerHandler =
     typename serializer_handler_traits<Protocol>::default_handler>
-class Serializer {
+class Serializer : public SerializerInterface {
  public:
-  static std::string Serialize(const typename Protocol::Ptr& protocol) {
+  std::string Serialize(ProtocolInterface::Ptr protocol) override {
     SerializerHandler handle;
     return handle.Serialize(protocol);
   }
 
-  static typename Protocol::Ptr Deserialize(const std::string& stream) {
+  ProtocolInterface::Ptr Deserialize(const std::string& stream) override {
     SerializerHandler handle;
     return handle.Deserialize(stream);
   }
