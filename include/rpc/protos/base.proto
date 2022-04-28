@@ -6,5 +6,6 @@ message BaseProtocolBuf {
   uint32 type = 3;
   uint32 req_id = 4;
   uint32 data_len = 5;
-  bytes data = 6;
+  optional string srv_name = 6;
+  bytes data = 7;
 }
