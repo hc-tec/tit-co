@@ -22,13 +22,15 @@ namespace _pbi = _pb::internal;
 
 PROTOBUF_CONSTEXPR BaseProtocolBuf::BaseProtocolBuf(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.data_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+    /*decltype(_impl_._has_bits_)*/{}
+  , /*decltype(_impl_._cached_size_)*/{}
+  , /*decltype(_impl_.srv_name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.data_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.magic_)*/0u
   , /*decltype(_impl_.version_)*/0u
   , /*decltype(_impl_.type_)*/0u
   , /*decltype(_impl_.req_id_)*/0u
-  , /*decltype(_impl_.data_len_)*/0u
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+  , /*decltype(_impl_.data_len_)*/0u} {}
 struct BaseProtocolBufDefaultTypeInternal {
   PROTOBUF_CONSTEXPR BaseProtocolBufDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -43,7 +45,7 @@ static constexpr ::_pb::EnumDescriptor const** file_level_enum_descriptors_base_
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_base_2eproto = nullptr;
 
 const uint32_t TableStruct_base_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::BaseProtocolBuf, _impl_._has_bits_),
   PROTOBUF_FIELD_OFFSET(::BaseProtocolBuf, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
@@ -54,10 +56,18 @@ const uint32_t TableStruct_base_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(pro
   PROTOBUF_FIELD_OFFSET(::BaseProtocolBuf, _impl_.type_),
   PROTOBUF_FIELD_OFFSET(::BaseProtocolBuf, _impl_.req_id_),
   PROTOBUF_FIELD_OFFSET(::BaseProtocolBuf, _impl_.data_len_),
+  PROTOBUF_FIELD_OFFSET(::BaseProtocolBuf, _impl_.srv_name_),
   PROTOBUF_FIELD_OFFSET(::BaseProtocolBuf, _impl_.data_),
+  ~0u,
+  ~0u,
+  ~0u,
+  ~0u,
+  ~0u,
+  0,
+  ~0u,
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, -1, -1, sizeof(::BaseProtocolBuf)},
+  { 0, 13, -1, sizeof(::BaseProtocolBuf)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -65,14 +75,15 @@ static const ::_pb::Message* const file_default_instances[] = {
 };
 
 const char descriptor_table_protodef_base_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\nbase.proto\"o\n\017BaseProtocolBuf\022\r\n\005magic"
-  "\030\001 \001(\r\022\017\n\007version\030\002 \001(\r\022\014\n\004type\030\003 \001(\r\022\016\n"
-  "\006req_id\030\004 \001(\r\022\020\n\010data_len\030\005 \001(\r\022\014\n\004data\030"
-  "\006 \001(\014b\006proto3"
+  "\n\nbase.proto\"\223\001\n\017BaseProtocolBuf\022\r\n\005magi"
+  "c\030\001 \001(\r\022\017\n\007version\030\002 \001(\r\022\014\n\004type\030\003 \001(\r\022\016"
+  "\n\006req_id\030\004 \001(\r\022\020\n\010data_len\030\005 \001(\r\022\025\n\010srv_"
+  "name\030\006 \001(\tH\000\210\001\001\022\014\n\004data\030\007 \001(\014B\013\n\t_srv_na"
+  "meb\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_base_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_base_2eproto = {
-    false, false, 133, descriptor_table_protodef_base_2eproto,
+    false, false, 170, descriptor_table_protodef_base_2eproto,
     "base.proto",
     &descriptor_table_base_2eproto_once, nullptr, 0, 1,
     schemas, file_default_instances, TableStruct_base_2eproto::offsets,
@@ -90,6 +101,10 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::_pbi::AddDescriptorsRunner dynamic_in
 
 class BaseProtocolBuf::_Internal {
  public:
+  using HasBits = decltype(std::declval<BaseProtocolBuf>()._impl_._has_bits_);
+  static void set_has_srv_name(HasBits* has_bits) {
+    (*has_bits)[0] |= 1u;
+  }
 };
 
 BaseProtocolBuf::BaseProtocolBuf(::PROTOBUF_NAMESPACE_ID::Arena* arena,
@@ -101,15 +116,25 @@ BaseProtocolBuf::BaseProtocolBuf(::PROTOBUF_NAMESPACE_ID::Arena* arena,
 BaseProtocolBuf::BaseProtocolBuf(const BaseProtocolBuf& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   new (&_impl_) Impl_{
-      decltype(_impl_.data_){}
+      decltype(_impl_._has_bits_){from._impl_._has_bits_}
+    , /*decltype(_impl_._cached_size_)*/{}
+    , decltype(_impl_.srv_name_){}
+    , decltype(_impl_.data_){}
     , decltype(_impl_.magic_){}
     , decltype(_impl_.version_){}
     , decltype(_impl_.type_){}
     , decltype(_impl_.req_id_){}
-    , decltype(_impl_.data_len_){}
-    , /*decltype(_impl_._cached_size_)*/{}};
+    , decltype(_impl_.data_len_){}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _impl_.srv_name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.srv_name_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (from._internal_has_srv_name()) {
+    _impl_.srv_name_.Set(from._internal_srv_name(), 
+      GetArenaForAllocation());
+  }
   _impl_.data_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
     _impl_.data_.Set("", GetArenaForAllocation());
@@ -129,14 +154,20 @@ inline void BaseProtocolBuf::SharedCtor(
   (void)arena;
   (void)is_message_owned;
   new (&_impl_) Impl_{
-      decltype(_impl_.data_){}
+      decltype(_impl_._has_bits_){}
+    , /*decltype(_impl_._cached_size_)*/{}
+    , decltype(_impl_.srv_name_){}
+    , decltype(_impl_.data_){}
     , decltype(_impl_.magic_){0u}
     , decltype(_impl_.version_){0u}
     , decltype(_impl_.type_){0u}
     , decltype(_impl_.req_id_){0u}
     , decltype(_impl_.data_len_){0u}
-    , /*decltype(_impl_._cached_size_)*/{}
   };
+  _impl_.srv_name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.srv_name_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   _impl_.data_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
     _impl_.data_.Set("", GetArenaForAllocation());
@@ -154,6 +185,7 @@ BaseProtocolBuf::~BaseProtocolBuf() {
 
 inline void BaseProtocolBuf::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  _impl_.srv_name_.Destroy();
   _impl_.data_.Destroy();
 }
 
@@ -167,15 +199,21 @@ void BaseProtocolBuf::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    _impl_.srv_name_.ClearNonDefaultToEmpty();
+  }
   _impl_.data_.ClearToEmpty();
   ::memset(&_impl_.magic_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&_impl_.data_len_) -
       reinterpret_cast<char*>(&_impl_.magic_)) + sizeof(_impl_.data_len_));
+  _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
 const char* BaseProtocolBuf::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
     ptr = ::_pbi::ReadTag(ptr, &tag);
@@ -220,9 +258,19 @@ const char* BaseProtocolBuf::_InternalParse(const char* ptr, ::_pbi::ParseContex
         } else
           goto handle_unusual;
         continue;
-      // bytes data = 6;
+      // optional string srv_name = 6;
       case 6:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 50)) {
+          auto str = _internal_mutable_srv_name();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "BaseProtocolBuf.srv_name"));
+        } else
+          goto handle_unusual;
+        continue;
+      // bytes data = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 58)) {
           auto str = _internal_mutable_data();
           ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(ptr);
@@ -245,6 +293,7 @@ const char* BaseProtocolBuf::_InternalParse(const char* ptr, ::_pbi::ParseContex
     CHK_(ptr != nullptr);
   }  // while
 message_done:
+  _impl_._has_bits_.Or(has_bits);
   return ptr;
 failure:
   ptr = nullptr;
@@ -288,10 +337,20 @@ uint8_t* BaseProtocolBuf::_InternalSerialize(
     target = ::_pbi::WireFormatLite::WriteUInt32ToArray(5, this->_internal_data_len(), target);
   }
 
-  // bytes data = 6;
+  // optional string srv_name = 6;
+  if (_internal_has_srv_name()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_srv_name().data(), static_cast<int>(this->_internal_srv_name().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "BaseProtocolBuf.srv_name");
+    target = stream->WriteStringMaybeAliased(
+        6, this->_internal_srv_name(), target);
+  }
+
+  // bytes data = 7;
   if (!this->_internal_data().empty()) {
     target = stream->WriteBytesMaybeAliased(
-        6, this->_internal_data(), target);
+        7, this->_internal_data(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -310,7 +369,15 @@ size_t BaseProtocolBuf::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // bytes data = 6;
+  // optional string srv_name = 6;
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_srv_name());
+  }
+
+  // bytes data = 7;
   if (!this->_internal_data().empty()) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
@@ -364,6 +431,9 @@ void BaseProtocolBuf::MergeFrom(const BaseProtocolBuf& from) {
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
+  if (from._internal_has_srv_name()) {
+    _internal_set_srv_name(from._internal_srv_name());
+  }
   if (!from._internal_data().empty()) {
     _internal_set_data(from._internal_data());
   }
@@ -401,6 +471,11 @@ void BaseProtocolBuf::InternalSwap(BaseProtocolBuf* other) {
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.srv_name_, lhs_arena,
+      &other->_impl_.srv_name_, rhs_arena
+  );
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
       &_impl_.data_, lhs_arena,
       &other->_impl_.data_, rhs_arena

@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+message WorldProtocolBuf {
+  int32 result = 1;
+}

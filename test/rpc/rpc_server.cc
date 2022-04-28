@@ -2,17 +2,28 @@
 // Created by titto on 2022/4/25.
 //
 
-#include <string>
-#include <iostream>
 
-#include "os.h"
+
+#include <iostream>
+#include <string>
+
 #include "rpc/server_provider.h"
+#include "rpc/protocols/hello.h"
 
 using namespace tit::co;
+
+ProtocolInterface::Ptr hello(ProtocolInterface::Ptr req) {
+  auto req_protocol = (HelloProtocol::Ptr) req;
+  WorldProtocol::Ptr res_protocol = WorldProtocol::Create(req_protocol->name.size());
+  return res_protocol;
+}
 
 int main() {
   IPv4Address::Ptr addr = IPv4Address::Create("127.0.0.1", 8888);
   RpcServerProvider::Ptr serverProvider = RpcServerProvider::Create(addr);
+
+  serverProvider->RegisterHandler("hello", hello);
+
   serverProvider->Start();
 
   char ch;

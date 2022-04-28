@@ -172,14 +172,33 @@ class BaseProtocolBuf final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kDataFieldNumber = 6,
+    kSrvNameFieldNumber = 6,
+    kDataFieldNumber = 7,
     kMagicFieldNumber = 1,
     kVersionFieldNumber = 2,
     kTypeFieldNumber = 3,
     kReqIdFieldNumber = 4,
     kDataLenFieldNumber = 5,
   };
-  // bytes data = 6;
+  // optional string srv_name = 6;
+  bool has_srv_name() const;
+  private:
+  bool _internal_has_srv_name() const;
+  public:
+  void clear_srv_name();
+  const std::string& srv_name() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_srv_name(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_srv_name();
+  PROTOBUF_NODISCARD std::string* release_srv_name();
+  void set_allocated_srv_name(std::string* srv_name);
+  private:
+  const std::string& _internal_srv_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_srv_name(const std::string& value);
+  std::string* _internal_mutable_srv_name();
+  public:
+
+  // bytes data = 7;
   void clear_data();
   const std::string& data() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
@@ -246,13 +265,15 @@ class BaseProtocolBuf final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr srv_name_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr data_;
     uint32_t magic_;
     uint32_t version_;
     uint32_t type_;
     uint32_t req_id_;
     uint32_t data_len_;
-    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_base_2eproto;
@@ -368,7 +389,75 @@ inline void BaseProtocolBuf::set_data_len(uint32_t value) {
   // @@protoc_insertion_point(field_set:BaseProtocolBuf.data_len)
 }
 
-// bytes data = 6;
+// optional string srv_name = 6;
+inline bool BaseProtocolBuf::_internal_has_srv_name() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool BaseProtocolBuf::has_srv_name() const {
+  return _internal_has_srv_name();
+}
+inline void BaseProtocolBuf::clear_srv_name() {
+  _impl_.srv_name_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000001u;
+}
+inline const std::string& BaseProtocolBuf::srv_name() const {
+  // @@protoc_insertion_point(field_get:BaseProtocolBuf.srv_name)
+  return _internal_srv_name();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void BaseProtocolBuf::set_srv_name(ArgT0&& arg0, ArgT... args) {
+ _impl_._has_bits_[0] |= 0x00000001u;
+ _impl_.srv_name_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:BaseProtocolBuf.srv_name)
+}
+inline std::string* BaseProtocolBuf::mutable_srv_name() {
+  std::string* _s = _internal_mutable_srv_name();
+  // @@protoc_insertion_point(field_mutable:BaseProtocolBuf.srv_name)
+  return _s;
+}
+inline const std::string& BaseProtocolBuf::_internal_srv_name() const {
+  return _impl_.srv_name_.Get();
+}
+inline void BaseProtocolBuf::_internal_set_srv_name(const std::string& value) {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.srv_name_.Set(value, GetArenaForAllocation());
+}
+inline std::string* BaseProtocolBuf::_internal_mutable_srv_name() {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  return _impl_.srv_name_.Mutable(GetArenaForAllocation());
+}
+inline std::string* BaseProtocolBuf::release_srv_name() {
+  // @@protoc_insertion_point(field_release:BaseProtocolBuf.srv_name)
+  if (!_internal_has_srv_name()) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000001u;
+  auto* p = _impl_.srv_name_.Release();
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.srv_name_.IsDefault()) {
+    _impl_.srv_name_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
+}
+inline void BaseProtocolBuf::set_allocated_srv_name(std::string* srv_name) {
+  if (srv_name != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000001u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000001u;
+  }
+  _impl_.srv_name_.SetAllocated(srv_name, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.srv_name_.IsDefault()) {
+    _impl_.srv_name_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:BaseProtocolBuf.srv_name)
+}
+
+// bytes data = 7;
 inline void BaseProtocolBuf::clear_data() {
   _impl_.data_.ClearToEmpty();
 }
