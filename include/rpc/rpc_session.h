@@ -5,16 +5,19 @@
 #ifndef TIT_COROUTINE_SESSION_H
 #define TIT_COROUTINE_SESSION_H
 
+#include <net/session.h>
+
 #include <memory>
 
-#include "protocol.h"
+#include "net/session.h"
 #include "net/socket.h"
+#include "protocol.h"
 
 namespace tit {
 
 namespace co {
 
-class RpcSession {
+class RpcSession : public Session {
  public:
   using Ptr = std::shared_ptr<RpcSession>;
 
@@ -30,7 +33,7 @@ class RpcSession {
   bool SendProtocol(Protocol::Ptr protocol);
 
  private:
- TcpSocket::Ptr socket_;
+  TcpSocket::Ptr socket_;
 
 };
 
