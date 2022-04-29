@@ -5,18 +5,18 @@
 #ifndef TIT_COROUTINE_CLIENT_H
 #define TIT_COROUTINE_CLIENT_H
 
-#include <string>
 #include <map>
+#include <string>
 
-#include "channel.h"
-#include "session.h"
-#include "mutex.h"
-#include "rpc.h"
-#include "protocol.h"
 #include "atomic.h"
-#include "net/socket.h"
+#include "channel.h"
+#include "mutex.h"
 #include "net/address.h"
+#include "net/socket.h"
+#include "protocol.h"
 #include "protocol_manager.h"
+#include "rpc.h"
+#include "rpc_protocol_handler.h"
 
 namespace tit {
 
@@ -53,7 +53,7 @@ class RpcClient {
   Result<typename SvrName2Protocol<srv_proto>::REQ,
          typename SvrName2Protocol<srv_proto>::RES>
       Call(const std::string& srv_name,
-       const typename SvrName2Protocol<srv_proto>::REQ::Ptr& req_proto) {
+       typename SvrName2Protocol<srv_proto>::REQ::Ptr req_proto) {
     using REQProtocol = typename SvrName2Protocol<srv_proto>::REQ;
     using RESProtocol = typename SvrName2Protocol<srv_proto>::RES;
     using REQProtocolPtr = typename REQProtocol::Ptr;
@@ -98,7 +98,7 @@ class RpcClient {
   void RecvLoop();
 
  private:
-  RpcSession::Ptr session_;
+  RpcProtocol protocol_handler_;
 
   uint32 req_id_;
   Params params_;

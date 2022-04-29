@@ -20,6 +20,7 @@ class BaseServer : public TcpServer::Delegate {
 
   void Bind(const Address::Ptr& addr) {
     server_ = new TcpServer(addr);
+    server_->set_delegate(this);
   }
 
   void Start() {
@@ -48,15 +49,18 @@ class BaseServer : public TcpServer::Delegate {
 
 };
 
-using REQ = RpcProtocol;
-using RESP = RpcProtocol;
-//template <class REQ, class RESP>
+//using REQ = RpcProtocol;
+//using RESP = RpcProtocol;
+template <class REQ, class RESP>
 class NetworkServer : public BaseServer {
  public:
-  using Callback = std::function<void(const NetworkServer*)>&;
+  using Callback = std::function<void(NetworkServer<REQ, RESP>*)>;
 
-  NetworkServer(Callback cb)
+  NetworkServer<REQ, RESP>(Callback cb)
       : cb_(cb) {}
+
+  REQ* req() { return &req_; }
+  RESP* resp() { return &resp_; }
 
  private:
   void OnNewConn(const TcpSocket::Ptr& new_sock) override {
@@ -66,8 +70,7 @@ class NetworkServer : public BaseServer {
     req_.Send();
   }
 
-  REQ* req() { return &req_; }
-  RESP* resp() { return &resp_; }
+
 
  private:
   REQ req_;

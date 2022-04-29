@@ -13,12 +13,22 @@
 #include "net/server.h"
 #include "protocol.h"
 #include "interfaces/protocol_interface.h"
+#include "rpc/rpc_protocol_handler.h"
 
 namespace tit {
 
 namespace co {
 
-class RpcServerProvider : public TcpServer::Delegate {
+
+//void func(NetworkServer<RpcRequest, RpcResponse>* server) {
+//  RpcRequest* req = server->req();
+//  Protocol* protocol = static_cast<Protocol*>(req->req_protocol());
+//  LOG(INFO) << protocol;
+//  server->resp()->set_resp_protocol(nullptr);
+//}
+
+
+class RpcServerProvider {
  public:
   using Ptr = std::shared_ptr<RpcServerProvider>;
   using RpcReq = ProtocolInterface::Ptr;
@@ -30,8 +40,10 @@ class RpcServerProvider : public TcpServer::Delegate {
   }
 
   explicit RpcServerProvider(const Address::Ptr& addr)
-      : server_(addr) {
-    server_.set_delegate(this);
+      : server_([this](NetworkServer<RpcRequest, RpcResponse>* server) {
+          this->OnNewConn(server);
+        }) {
+    server_.Bind(addr);
   }
 
   bool BindRegistry(const Address::Ptr& addr);
@@ -44,13 +56,13 @@ class RpcServerProvider : public TcpServer::Delegate {
     server_.Start();
   }
 
-  void OnBind(const TcpSocket::Ptr& server_sock, const Address::Ptr& addr) override {}
-  void OnListen(const TcpSocket::Ptr& server_sock) override {}
-  void OnNewConn(const TcpSocket::Ptr& new_sock) override;
+
+  void OnNewConn(NetworkServer<RpcRequest, RpcResponse>* server);
+
  private:
 
  private:
-  TcpServer server_;
+  NetworkServer<RpcRequest, RpcResponse> server_;
   // register functions
   std::map<std::string, Func> handlers_;
 };

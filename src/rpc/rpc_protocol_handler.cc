@@ -19,7 +19,7 @@ std::string RpcProtocol::Encode(ProtocolInterface::Ptr protocol) {
     return "";
   }
   char data_len[4];
-  snprintf(data_len, 4, "%04d",buf_len);
+  snprintf(data_len, 5, "%04d",buf_len);
   return std::string(data_len, 4).append(buf);
 }
 
@@ -57,7 +57,7 @@ ProtocolInterface::Ptr RpcProtocol::RecvProtocol() {
 }
 
 bool RpcProtocol::SendProtocol(ProtocolInterface::Ptr protocol) {
-  constexpr int8 kDataMaxLen = kDataLen;
+  if (protocol == nullptr) return false;
   LOG(DEBUG) << "send protocol";
   std::string buf = Encode(protocol);
   uint buf_len = buf.size();
@@ -79,7 +79,7 @@ bool RpcProtocol::SendProtocol(ProtocolInterface::Ptr protocol) {
 //    return false;
 //  }
   LOG(DEBUG) << "send protocol buf size: " << buf_len;
-  LOG(DEBUG) << "send protocol buf data: " << buf.data();
+  LOG(DEBUG) << "send protocol buf data: " << buf;
   if (socket_->Send(buf.data(), buf_len, -1) < buf_len) {
     LOG(DEBUG) << "packet body send error";
     return false;

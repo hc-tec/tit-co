@@ -11,7 +11,7 @@ namespace co {
 bool RpcClient::Connect(const Address::Ptr& addr) {
   TcpSocket::Ptr sock = TcpSocket::Create();
   if (!sock->Connect(addr)) return false;
-  session_ = RpcSession::Create(sock);
+  protocol_handler_.set_socket(sock);
   go([this]() {
     this->SendLoop();
   });
@@ -29,7 +29,7 @@ void RpcClient::SendLoop() {
     if (timeout()) {
       LOG(ERROR) << "rpc info send timeout";
     } else {
-      if (!session_->SendProtocol(protocol)) {
+      if (!protocol_handler_.SendProtocol(protocol)) {
         LOG(ERROR) << "rpc info send error";
       }
     }
@@ -40,7 +40,7 @@ void RpcClient::SendLoop() {
 void RpcClient::RecvLoop() {
   Protocol::Ptr protocol = nullptr;
   while (true) {
-    protocol = session_->RecvProtocol();
+    protocol = static_cast<Protocol*>(protocol_handler_.RecvProtocol());
     LOG(DEBUG) << "recv loop";
     uint32 req_id = protocol->req_id();
     Channel<Protocol::Ptr> recv_channel;
