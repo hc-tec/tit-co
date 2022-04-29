@@ -2,15 +2,15 @@
 // Created by titto on 2022/4/26.
 //
 
-#ifndef TIT_COROUTINE_SERVER_PROVIDER_H
-#define TIT_COROUTINE_SERVER_PROVIDER_H
+#ifndef TIT_COROUTINE_RPC_SERVER_PROVIDER_H
+#define TIT_COROUTINE_RPC_SERVER_PROVIDER_H
 
 #include <functional>
 #include <map>
 #include <memory>
 #include <string>
 
-#include "net/tcp.h"
+#include "net/server.h"
 #include "protocol.h"
 #include "interfaces/protocol_interface.h"
 
@@ -60,4 +60,4 @@ class RpcServerProvider : public TcpServer::Delegate {
 }  // namespace tit
 
 
-#endif  // TIT_COROUTINE_SERVER_PROVIDER_H
+#endif  // TIT_COROUTINE_RPC_SERVER_PROVIDER_H
