@@ -1,22 +1,37 @@
 //
-// Created by titto on 2022/4/26.
+// Created by titto on 2022/4/29.
 //
 
-#include "rpc/rpc_session.h"
-
-#include <algorithm>
-
-#include "log/logging.h"
 #include "rpc/rpc_protocol_handler.h"
+
+#include <rpc/protocol.h>
 
 namespace tit {
 
 namespace co {
 
-Protocol::Ptr RpcSession::RecvProtocol() {
-  constexpr int8 kDataLen = RpcProtocolMessage::kDataLen;
+std::string RpcProtocol::Encode(ProtocolInterface::Ptr protocol) {
+  BaseProtocolSerializer serializer;
+  std::string buf = serializer.Serialize(protocol);
+  int32 buf_len = buf.size();
+  if (buf_len > kDataMaxLen) {
+    LOG(DEBUG) << "total data length can't greaten than " << kDataMaxLen;
+    return "";
+  }
+  char data_len[4];
+  snprintf(data_len, 4, "%04d",buf_len);
+  return std::string(data_len, 4).append(buf);
+}
+
+ProtocolInterface::Ptr RpcProtocol::Decode(const char *buf,
+                                                  size_t size) {
+  BaseProtocolSerializer serializer;
+  return serializer.Deserialize(std::string(buf));
+}
+
+ProtocolInterface::Ptr RpcProtocol::RecvProtocol() {
   LOG(DEBUG) << "recv protocol";
-  char data_len_[RpcProtocolMessage::kDataLen+1];
+  char data_len_[kDataLen+1];
   data_len_[kDataLen] = '\0';
   if(socket_->Recvn(data_len_, kDataLen, -1) < kDataLen) {
     return nullptr;
@@ -32,7 +47,8 @@ Protocol::Ptr RpcSession::RecvProtocol() {
     return nullptr;
   }
   LOG(DEBUG) << "recv protocol buf data: " << buf;
-  return static_cast<Protocol*>(message_in()->Decode(buf, data_len));
+
+  return static_cast<Protocol*>(Decode(buf, data_len));
 //  std::string data(buf);
 //  LOG(DEBUG) << "recv protocol buf data: " << buf;
 //  BaseProtocolSerializer serializer;
@@ -40,10 +56,10 @@ Protocol::Ptr RpcSession::RecvProtocol() {
 //  return protocol;
 }
 
-bool RpcSession::SendProtocol(ProtocolInterface::Ptr protocol) {
-  constexpr int8 kDataMaxLen = RpcProtocolMessage::kDataLen;
+bool RpcProtocol::SendProtocol(ProtocolInterface::Ptr protocol) {
+  constexpr int8 kDataMaxLen = kDataLen;
   LOG(DEBUG) << "send protocol";
-  std::string buf = message_out()->Encode(protocol);
+  std::string buf = Encode(protocol);
   uint buf_len = buf.size();
   if (buf_len == 0) {
     LOG(DEBUG) << "total data length can't greaten than " << kDataMaxLen;

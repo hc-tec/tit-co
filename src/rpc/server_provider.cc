@@ -2,10 +2,11 @@
 // Created by titto on 2022/4/26.
 //
 
-#include "rpc/protocol_manager.h"
-#include "rpc/session.h"
 #include "rpc/server_provider.h"
+
+#include "rpc/protocol_manager.h"
 #include "rpc/protocols/hello.h"
+#include "rpc/rpc_session.h"
 
 namespace tit {
 
@@ -22,7 +23,6 @@ void RpcServerProvider::OnNewConn(const TcpSocket::Ptr& new_sock) {
       Func func = pair->second;
 
       SrvTraits* traits = ProtocolManagerSingleton::instance().Get(srv_name);
-      LOG(INFO) << "";
       SerializerInterface* req_serializer = traits->req_serializer();
       ProtocolInterface::Ptr req_proto = req_serializer->Deserialize(protocol->data());
       ProtocolInterface::Ptr res_proto = func(req_proto);
@@ -39,10 +39,6 @@ void RpcServerProvider::OnNewConn(const TcpSocket::Ptr& new_sock) {
       base_protocol = Protocol::Create(kResponseCall, protocol->req_id(), "");
     }
     session->SendProtocol(base_protocol);
-//    SvrName2Protocol<srv_name>::REQ;
-//    WorldProtocol::Ptr res_protocol = WorldProtocol::Create(12345);
-//    Serializer<WorldProtocol> serializer;
-
   }
 //  session->SendProtocol(protocol);
   LOG(INFO) << protocol->toString();
