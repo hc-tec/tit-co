@@ -19,14 +19,26 @@ void test_client() {
   IPv4Address::Ptr addr = IPv4Address::Create("127.0.0.1", 8888);
   RpcClient client;
   client.Connect(addr);
-  Result<HelloProtocol, WorldProtocol> res = client.Call<HELLO_PROTOCOL>("hello", protocol);
-  LOG(INFO) << res.base_proto()->name;
-  LOG(INFO) << res.target_proto()->result;
+//  go([&client, &protocol](){
+    Result<HelloProtocol, WorldProtocol> res = client.Call<HELLO_PROTOCOL>("hello", protocol);
+    LOG(INFO) << res.base_proto()->name;
+//  });
+//  go([&](){
+//    Result<HelloProtocol, WorldProtocol> res = client.Call<HELLO_PROTOCOL>("hello", protocol);
+//    LOG(INFO) << res.target_proto()->result;
+//  });
+//  go([&](){
+//    Result<HelloProtocol, WorldProtocol> res = client.Call<HELLO_PROTOCOL>("hello", protocol);
+//  });
+
+
+
 }
 
 
 int main() {
 
+  go(test_client);
   go(test_client);
 
   char ch;

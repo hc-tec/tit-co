@@ -31,6 +31,7 @@ void RpcClient::SendLoop() {
     } else {
       if (!protocol_handler_.SendProtocol(protocol)) {
         LOG(ERROR) << "rpc info send error";
+        break;
       }
     }
     protocol = nullptr;
@@ -42,6 +43,7 @@ void RpcClient::RecvLoop() {
   while (true) {
     protocol = static_cast<Protocol*>(protocol_handler_.RecvProtocol());
     LOG(DEBUG) << "recv loop";
+    if (protocol == nullptr) break;
     uint32 req_id = protocol->req_id();
     Channel<Protocol::Ptr> recv_channel;
     {

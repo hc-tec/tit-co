@@ -16,7 +16,7 @@ namespace co {
 class BaseServer : public TcpServer::Delegate {
  public:
   BaseServer()
-      : server_(nullptr), state_(), error_() {}
+      : server_(nullptr) {}
 
   void Bind(const Address::Ptr& addr) {
     server_ = new TcpServer(addr);
@@ -27,8 +27,7 @@ class BaseServer : public TcpServer::Delegate {
     server_->Start();
   }
 
-  int get_state() const { return state_; }
-  int get_error() const { return error_; }
+
 
  private:
   void OnBind(const TcpSocket::Ptr& server_sock, const Address::Ptr& addr) override {}
@@ -43,10 +42,6 @@ class BaseServer : public TcpServer::Delegate {
  private:
   TcpServer* server_;
 
- protected:
-  int state_;
-  int error_;
-
 };
 
 //using REQ = RpcProtocol;
@@ -57,17 +52,24 @@ class NetworkServer : public BaseServer {
   using Callback = std::function<void(NetworkServer<REQ, RESP>*)>;
 
   NetworkServer<REQ, RESP>(Callback cb)
-      : cb_(cb) {}
+      : cb_(std::move(cb)) {}
 
   REQ* req() { return &req_; }
   RESP* resp() { return &resp_; }
 
+  void set_callback(Callback cb) {
+    cb_ = std::move(cb);
+  }
+
  private:
   void OnNewConn(const TcpSocket::Ptr& new_sock) override {
     req_.set_socket(new_sock);
+    resp_.set_socket(new_sock);
     req_.Recv();
     cb_(this);
-    req_.Send();
+    if (req_.get_error() != 1) {
+      resp_.Send();
+    }
   }
 
 
