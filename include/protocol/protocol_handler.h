@@ -30,7 +30,7 @@ class ProtocolHandler
   ProtocolInterface* res_protocol() { return resp_protocol_; }
 
   void set_socket(const TcpSocket::Ptr& socket) { socket_ = socket; }
-  void set_resp_protocol(ProtocolInterface* resp_protocol) { resp_protocol_ = resp_protocol; }
+
  protected:
   TcpSocket::Ptr socket_;
   ProtocolInterface* req_protocol_;

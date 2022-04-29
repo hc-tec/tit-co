@@ -17,7 +17,8 @@ void RpcServerProvider::OnNewConn(
   RpcRequest* req = server->req();
   Protocol* protocol = static_cast<Protocol*>(req->req_protocol());
   LOG(INFO) << protocol->toString();
-  server_.req()->set_resp_protocol(nullptr);
+
+  server_.resp()->set_resp_protocol(nullptr);
 //  RpcSession::Ptr session = RpcSession::Create(new_sock);
 //  Protocol::Ptr protocol = session->RecvProtocol();
 //  if (protocol->msg_type() == kRequestCall) {

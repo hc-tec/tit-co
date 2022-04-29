@@ -38,7 +38,8 @@ class RpcRequest : public RpcProtocol {
 };
 
 class RpcResponse: public RpcProtocol {
-
+ public:
+  void set_resp_protocol(ProtocolInterface* resp_protocol) { resp_protocol_ = resp_protocol; }
 };
 
 }  // namespace co
