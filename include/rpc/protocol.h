@@ -124,7 +124,7 @@ class Protocol : public ProtocolInterface {
 template<>
 class SerializerHandler<Protocol> {
  public:
-  virtual std::string Serialize(ProtocolInterface::Ptr protocol_) {
+  virtual std::string Serialize(ProtocolInterface* protocol_) {
     Protocol::Ptr protocol = (Protocol::Ptr)protocol_;
     BaseProtocolBuf buf;
     buf.set_magic(protocol->magic());
@@ -155,7 +155,7 @@ class SerializerHandler<Protocol> {
 
 class MySerializerHandler {
  public:
-  virtual std::string Serialize(ProtocolInterface::Ptr protocol_) {
+  virtual std::string Serialize(ProtocolInterface* protocol_) {
     Protocol::Ptr protocol = (Protocol::Ptr)protocol_;
     LOG(DEBUG) << "custom serializer handler";
     BaseProtocolBuf buf;

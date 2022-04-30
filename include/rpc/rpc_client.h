@@ -2,8 +2,8 @@
 // Created by titto on 2022/4/27.
 //
 
-#ifndef TIT_COROUTINE_CLIENT_H
-#define TIT_COROUTINE_CLIENT_H
+#ifndef TIT_COROUTINE_RPC_CLIENT_H
+#define TIT_COROUTINE_RPC_CLIENT_H
 
 #include <map>
 #include <string>
@@ -113,4 +113,4 @@ class RpcClient {
 }  // namespace tit
 
 
-#endif  // TIT_COROUTINE_CLIENT_H
+#endif  // TIT_COROUTINE_RPC_CLIENT_H

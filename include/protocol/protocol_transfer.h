@@ -14,9 +14,9 @@ namespace co {
 class ProtocolTransfer {
  public:
 
-  virtual ProtocolInterface::Ptr RecvProtocol() = 0;
+  virtual ProtocolInterface* RecvProtocol() = 0;
 
-  virtual bool SendProtocol(ProtocolInterface::Ptr protocol) = 0;
+  virtual bool SendProtocol(ProtocolInterface* protocol) = 0;
 
 };
 

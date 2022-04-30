@@ -16,8 +16,8 @@ namespace co {
 
 class SerializerInterface {
  public:
-  virtual std::string Serialize(ProtocolInterface::Ptr protocol) { return nullptr; }
-  virtual ProtocolInterface::Ptr Deserialize(const std::string& stream) { return nullptr; }
+  virtual std::string Serialize(ProtocolInterface* protocol) { return nullptr; }
+  virtual ProtocolInterface* Deserialize(const std::string& stream) { return nullptr; }
 };
 
 template <typename Protocol>
@@ -44,12 +44,12 @@ template <typename Protocol, typename SerializerHandler =
     typename serializer_handler_traits<Protocol>::default_handler>
 class Serializer : public SerializerInterface {
  public:
-  std::string Serialize(ProtocolInterface::Ptr protocol) override {
+  std::string Serialize(ProtocolInterface* protocol) override {
     SerializerHandler handle;
     return handle.Serialize(protocol);
   }
 
-  ProtocolInterface::Ptr Deserialize(const std::string& stream) override {
+  ProtocolInterface* Deserialize(const std::string& stream) override {
     SerializerHandler handle;
     return handle.Deserialize(stream);
   }

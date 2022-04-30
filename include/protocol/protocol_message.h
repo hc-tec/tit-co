@@ -17,13 +17,13 @@ namespace co {
 class MessageOut {
  public:
   virtual ~MessageOut() {}
-  virtual std::string Encode(ProtocolInterface::Ptr protocol) = 0;
+  virtual std::string Encode(ProtocolInterface* protocol) = 0;
 };
 
 class MessageIn {
  public:
   virtual ~MessageIn() {}
-  virtual ProtocolInterface::Ptr Decode(const char* buf, size_t size) = 0;
+  virtual ProtocolInterface* Decode(const char* buf, size_t size) = 0;
 };
 
 class ProtocolMessage : public MessageOut, public MessageIn {
