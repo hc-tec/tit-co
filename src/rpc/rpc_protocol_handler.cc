@@ -35,6 +35,7 @@ ProtocolInterface* RpcProtocol::RecvProtocol() {
   data_len_[kDataLen] = '\0';
   int read = socket_->Recvn(data_len_, kDataLen, -1);
   if (read == 0) {
+    LOG(DEBUG) << "socket: " << socket_->fd() << " closed";
     socket_->Close();
     return nullptr;
   }
