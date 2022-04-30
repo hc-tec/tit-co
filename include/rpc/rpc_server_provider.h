@@ -31,9 +31,7 @@ namespace co {
 class RpcServerProvider {
  public:
   using Ptr = std::shared_ptr<RpcServerProvider>;
-  using RpcReq = ProtocolInterface::Ptr;
-  using RpcRes = ProtocolInterface::Ptr;
-  using Func = std::function<RpcRes (const RpcReq&)>;
+  using Func = std::function<void(NetworkServer<RpcRequest, RpcResponse>*)>;
 
   static Ptr Create(const Address::Ptr& addr) {
     return std::make_shared<RpcServerProvider>(addr);

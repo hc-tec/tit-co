@@ -10,10 +10,11 @@
 
 using namespace tit::co;
 
-ProtocolInterface::Ptr hello(ProtocolInterface::Ptr req) {
-  auto req_protocol = (HelloProtocol::Ptr) req;
-  WorldProtocol::Ptr res_protocol = WorldProtocol::Create(req_protocol->name.size());
-  return res_protocol;
+void hello(NetworkServer<RpcRequest, RpcResponse>* server) {
+  auto req_protocol = (HelloProtocol*) server->req()->data_req_protocol();
+  WorldProtocol* res_protocol = WorldProtocol::Create(req_protocol->name.size());
+  RpcResponse* resp = server->resp();
+  resp->set_data_resp_protocol(res_protocol);
 }
 
 int main() {

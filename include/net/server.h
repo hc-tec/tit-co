@@ -44,8 +44,6 @@ class BaseServer : public TcpServer::Delegate {
 
 };
 
-//using REQ = RpcProtocol;
-//using RESP = RpcProtocol;
 template <class REQ, class RESP>
 class NetworkServer : public BaseServer {
  public:
