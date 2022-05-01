@@ -45,6 +45,35 @@ class ProtocolMessage : public MessageOut, public MessageIn {
 
 };
 
+class ProtocolMessageWrapper : public ProtocolMessage {
+ public:
+  ProtocolMessageWrapper(ProtocolMessage* inner)
+      : inner_(inner) {}
+
+  std::string Encode(ProtocolInterface* protocol) override {
+    std::string inner_data = ProtocolMessage::Encode(protocol);
+    ProtocolInterface* inner_protocol = InnerDecode(inner_data.data(), inner_data.size());
+    if (inner_) {
+      inner_->Encode(inner_protocol);
+    }
+  }
+
+  ProtocolInterface* Decode(const char* buf, size_t size) override {
+    ProtocolInterface* inner_protocol = ProtocolMessage::Decode(buf, size);
+    std::string inner_data = InnerEncode(inner_protocol);
+    if (inner_) {
+      inner_->Decode(inner_data.data(), inner_data.size());
+    }
+  }
+
+ protected:
+  virtual std::string InnerEncode(ProtocolInterface* protocol) {}
+  virtual ProtocolInterface* InnerDecode(const char* buf, size_t size) {}
+
+ private:
+  ProtocolMessage* inner_;
+};
+
 }  // namespace co
 
 }  // namespace tit
